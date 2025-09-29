@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ObituaryApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0da49f6f502492ab5cf95ad03d7379ebe003e0da")]
 [assembly: System.Reflection.AssemblyProductAttribute("ObituaryApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ObituaryApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
