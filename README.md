@@ -20,7 +20,7 @@ Comp4976-Assignment/
 
 ## Development Progress
 
-### ✅ Completed Tasks
+### Completed Tasks
 - [x] Created solution file (`Comp4976-Assignment.sln`)
 - [x] Created ASP.NET Core MVC project (`ObituaryApp`) with .NET 9.0
   - Command used: `dotnet new mvc -n ObituaryApp -f net9.0` (run from `/backend` directory)
@@ -84,19 +84,6 @@ Comp4976-Assignment/
   - Documented correct setup for Identity (cookie) and JWT (API) authentication
   - Added comments to clarify usage and prevent future errors
 
-### 🔄 Current Status
-- Basic project structure is set up
-- Ready for development
-
-### 📋 Next Steps
-- [ ] Add project to solution file
-- [ ] Design database schema for obituaries
-- [ ] Implement obituary models
-- [ ] Create controllers for CRUD operations
-- [ ] Design views for obituary management
-- [ ] Add authentication (if required)
-- [ ] Implement search functionality
-- [ ] Add styling and responsive design
 
 ## Requirements Progress (Backend)
 
@@ -137,13 +124,20 @@ dotnet watch run
 
 The application will be available at: http://localhost:5151
 
-## Notes
-- Created: September 28, 2025
-- Framework: ASP.NET Core MVC (.NET 9.0)
-- Database: TBD
+## 🌐 Main Endpoints (Port 5151)
 
-## Assignment Requirements
-*Add your specific assignment requirements here*
+You can reach these endpoints directly in your browser (replace with your actual port if different):
+
+- [Home Page (MVC)](http://localhost:5151/)
+- [Swagger UI (API Explorer)](http://localhost:5151/swagger)
+- [Login Page (Identity)](http://localhost:5151/Identity/Account/Login)
+- [Register Page (Identity)](http://localhost:5151/Identity/Account/Register)
+- [Logout Page (Identity)](http://localhost:5151/Identity/Account/Logout)
+- [Obituaries List (MVC)](http://localhost:5151/Obituaries)
+- [Obituaries API (example)](http://localhost:5151/api/Obituaries)
+
+_Note: Some endpoints may require authentication or may not be available until you scaffold the corresponding controller or page._
+
 
 ---
 *Last updated: September 28, 2025*
