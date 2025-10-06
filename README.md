@@ -13,6 +13,9 @@ Comp4976-Assignment/
         ├── ObituaryApp.csproj
         ├── Program.cs
         ├── Controllers/
+        ├── Data/
+        ├── Extensions/
+        ├── Migrations/
         ├── Models/
         ├── Views/
         └── wwwroot/
@@ -101,8 +104,9 @@ Comp4976-Assignment/
 
 ### In Progress / Next Steps
 - Add photo upload handling
-- Blazor WebAssembly frontend (separate project)
 - Azure deployment and DevOps pipelines
+- Double checking all requirements for Assignment 1
+- Assignment 2: Blazor WebAssembly frontend (separate project)
 
 ## Getting Started
 
