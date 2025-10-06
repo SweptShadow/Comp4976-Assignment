@@ -4,74 +4,68 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1 class="mb-3">Obituaries</h1>
+<p class="text-muted">Browse, search, and manage obituary entries.</p>
+
+<form asp-action="Index" method="get" class="form-inline mb-3">
+    <input type="text" name="search" value="@ViewBag.Search" placeholder="Search by name" class="form-control mr-2" />
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-success">+ Create New Obituary</a>
 </p>
+
+
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FullName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateOfBirth)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateOfDeath)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Biography)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PhotoPath)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedBy)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ModifiedDate)
-            </th>
+            <th>@Html.DisplayNameFor(model => model.FullName)</th>
+            <th>@Html.DisplayNameFor(model => model.DateOfBirth)</th>
+            <th>@Html.DisplayNameFor(model => model.DateOfDeath)</th>
+            <th>@Html.DisplayNameFor(model => model.Biography)</th>
+            <th>@Html.DisplayNameFor(model => model.PhotoPath)</th>
+
+            @* <th>@Html.DisplayNameFor(model => model.CreatedBy)</th>
+            <th>@Html.DisplayNameFor(model => model.CreatedDate)</th>
+            <th>@Html.DisplayNameFor(model => model.ModifiedDate)</th> *@
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateOfBirth)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateOfDeath)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Biography)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PhotoPath)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedBy)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ModifiedDate)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.FullName)</td>
+                <td>@item.DateOfBirth.ToShortDateString()</td>
+                <td>@item.DateOfDeath.ToShortDateString()</td>
+                <td>@(item.Biography.Length > 100 ? item.Biography.Substring(0, 100) + "..." : item.Biography)</td>
+
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                    @if (User.Identity.IsAuthenticated && (User.IsInRole("admin") || item.CreatedBy ==
+                                    User.FindFirst("sub")?.Value))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                    }
+                </td>
+
+            </tr>
+        }
     </tbody>
 </table>
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <span>Page @ViewBag.Page of @(Math.Ceiling((double)ViewBag.Total / ViewBag.PageSize))</span>
+    <div>
+        @if (ViewBag.Page > 1)
+        {
+            <a asp-action="Index" asp-route-page="@(ViewBag.Page - 1)" asp-route-search="@ViewBag.Search" class="btn btn-outline-secondary btn-sm">Previous</a>
+        }
+        @if ((ViewBag.Page * ViewBag.PageSize) < ViewBag.Total)
+        {
+            <a asp-action="Index" asp-route-page="@(ViewBag.Page + 1)" asp-route-search="@ViewBag.Search" class="btn btn-outline-secondary btn-sm">Next</a>
+        }
+    </div>
+</div>

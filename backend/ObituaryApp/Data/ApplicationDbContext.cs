@@ -32,6 +32,10 @@ namespace ObituaryApp.Data
                 .Property(o => o.Biography)
                 .HasMaxLength(5000);  // SQL: Biography VARCHAR(5000)
 
+            // Add index for faster search by name
+            builder.Entity<Obituary>()
+                .HasIndex(o => o.FullName);
+
             // Future relationship example:
             // builder.Entity<Obituary>()
             //     .HasMany(o => o.Photos)

@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using ObituaryApp.Extensions;
 using ObituaryApp.Data;
 using ObituaryApp.Models;
 
@@ -20,10 +22,33 @@ namespace ObituaryApp.Controllers
         }
 
         // GET: Obituaries
-        public async Task<IActionResult> Index()
+        /**
+         * Lists obituaries with optional search and pagination.
+         * Anonymous users can view.
+         */
+        [AllowAnonymous]
+        public async Task<IActionResult> Index(string? search, int page = 1, int pageSize = 10)
         {
-            return View(await _context.Obituaries.ToListAsync());
+            var query = _context.Obituaries.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(o => o.FullName.Contains(search));
+
+            var total = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(o => o.CreatedDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.Search = search;
+            ViewBag.Page = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.Total = total;
+
+            return View(items);
         }
+
 
         // GET: Obituaries/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -52,106 +77,138 @@ namespace ObituaryApp.Controllers
         // POST: Obituaries/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /**
+         * Creates a new obituary.
+         * Only authenticated users can create.
+         * Sets CreatedBy automatically from logged-in user.
+         */
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FullName,DateOfBirth,DateOfDeath,Biography,PhotoPath,CreatedBy,CreatedDate,ModifiedDate")] Obituary obituary)
+        public async Task<IActionResult> Create([Bind("FullName,DateOfBirth,DateOfDeath,Biography")] Obituary obituary)
         {
-            if (ModelState.IsValid)
+            if (obituary.DateOfDeath < obituary.DateOfBirth)
             {
-                _context.Add(obituary);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError(nameof(obituary.DateOfDeath), "Date of death cannot be before date of birth.");
             }
-            return View(obituary);
+
+            if (!ModelState.IsValid) return View(obituary);
+
+            var userId = User.GetUserId();
+            if (userId == null) return Forbid();
+
+            obituary.CreatedBy = userId;
+            obituary.CreatedDate = DateTime.UtcNow;
+            obituary.ModifiedDate = DateTime.UtcNow;
+
+            _context.Add(obituary);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
+
 
         // GET: Obituaries/Edit/5
+        /**
+         * Returns edit form.
+         * Only creator or admin can access.
+         */
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var obituary = await _context.Obituaries.FindAsync(id);
-            if (obituary == null)
-            {
-                return NotFound();
-            }
+            if (obituary == null) return NotFound();
+
+            if (!CanModify(obituary)) return Forbid();
+
             return View(obituary);
         }
+
 
         // POST: Obituaries/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /**
+         * Updates an obituary.
+         * Only creator or admin can modify.
+         * Updates ModifiedDate automatically.
+         */
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,DateOfBirth,DateOfDeath,Biography,PhotoPath,CreatedBy,CreatedDate,ModifiedDate")] Obituary obituary)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,DateOfBirth,DateOfDeath,Biography")] Obituary obituary)
         {
-            if (id != obituary.Id)
+            if (id != obituary.Id) return NotFound();
+
+            var existing = await _context.Obituaries.FindAsync(id);
+            if (existing == null) return NotFound();
+
+            if (!CanModify(existing)) return Forbid();
+
+            if (obituary.DateOfDeath < obituary.DateOfBirth)
             {
-                return NotFound();
+                ModelState.AddModelError(nameof(obituary.DateOfDeath), "Date of death cannot be before date of birth.");
             }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(obituary);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ObituaryExists(obituary.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(obituary);
-        }
+            if (!ModelState.IsValid) return View(obituary);
 
-        // GET: Obituaries/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var obituary = await _context.Obituaries
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (obituary == null)
-            {
-                return NotFound();
-            }
-
-            return View(obituary);
-        }
-
-        // POST: Obituaries/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var obituary = await _context.Obituaries.FindAsync(id);
-            if (obituary != null)
-            {
-                _context.Obituaries.Remove(obituary);
-            }
+            existing.FullName = obituary.FullName;
+            existing.DateOfBirth = obituary.DateOfBirth;
+            existing.DateOfDeath = obituary.DateOfDeath;
+            existing.Biography = obituary.Biography;
+            existing.ModifiedDate = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ObituaryExists(int id)
+
+        // GET: Obituaries/Delete/5
+        /**
+         * Returns delete confirmation.
+         * Only creator or admin can access.
+         */
+        [Authorize]
+        public async Task<IActionResult> Delete(int? id)
         {
-            return _context.Obituaries.Any(e => e.Id == id);
+            if (id == null) return NotFound();
+
+            var obituary = await _context.Obituaries.FirstOrDefaultAsync(m => m.Id == id);
+            if (obituary == null) return NotFound();
+
+            if (!CanModify(obituary)) return Forbid();
+
+            return View(obituary);
+        }
+
+        // POST: Obituaries/Delete/5
+        /**
+         * Deletes an obituary.
+         * Only creator or admin can perform.
+         */
+        [Authorize]
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var obituary = await _context.Obituaries.FindAsync(id);
+            if (obituary == null) return NotFound();
+
+            if (!CanModify(obituary)) return Forbid();
+
+            _context.Obituaries.Remove(obituary);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        /**
+         * Returns true if current user is admin or the creator of the obituary.
+         */
+        private bool CanModify(Obituary obituary)
+        {
+            var userId = User.GetUserId();
+            return User.IsInRole("admin") || (userId != null && obituary.CreatedBy == userId);
         }
     }
 }

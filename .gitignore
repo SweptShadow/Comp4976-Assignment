@@ -1,0 +1,79 @@
+/**
+ * .gitignore for ASP.NET Core solution with MVC + EF Core + Identity + Swagger.
+ * This is to keep source tracked; ignores build artifacts, IDE-specific files, and local secrets.
+ */
+
+# Build outputs
+# Ignore build outputs in any subfolder 
+**/bin/
+**/obj/
+**/artifacts/
+
+# User-specific
+*.user
+*.rsuser
+*.suo
+*.userosscache
+
+# SQLite local artifact
+*.db
+
+
+# IDE
+.vs/
+.ReSharper*/
+*_Resharper.*
+.idea/
+*.sln.iml
+
+# Logs and dumps
+*.log
+logs/
+*.pid
+*.dmp
+
+# NuGet
+packages/
+*.nupkg
+# Allow package references via project files; don’t ignore project.assets.json as it lives in obj
+
+# Tooling and caches
+/.tools/
+.cache/
+dist/
+
+# Node (if any frontend assets later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Publish outputs
+wwwroot/dist/
+publish/
+**/wwwroot/uploads/
+
+# EF Migrations (keep .cs; ignore generated snapshot if desired)
+# Uncomment next line if we want to not track snapshots:
+# **/Migrations/*_Snapshot.cs
+
+# Rider / JetBrains
+*.DotSettings.user
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Secrets: keep environment-specific settings out of source control if they contain secrets
+# Track appsettings.json without secrets; use env vars for production secrets.
+# If you store local secrets, ignore the local override file:
+appsettings.Local.json
+secrets.json
+
+# Static site generators (if used)
+.output/
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml

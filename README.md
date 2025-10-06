@@ -94,13 +94,13 @@ Comp4976-Assignment/
 - Identity UI integrated in layout (dynamic login/register/logout)
 - JWT authentication configured for API security
 - Solution/project structure and version control (GitHub) set up
-
-### In Progress / Next Steps
-- Implement full CRUD for obituary entries (create, edit, delete)
+- Implemented full CRUD for obituary entries (create, edit, delete)
 - Restrict edit/delete to creator or admin
-- Add photo upload handling
 - Add obituary listing with pagination and search
 - Complete RESTful API endpoints for CRUD and JSON responses
+
+### In Progress / Next Steps
+- Add photo upload handling
 - Blazor WebAssembly frontend (separate project)
 - Azure deployment and DevOps pipelines
 
@@ -136,8 +136,12 @@ You can reach these endpoints directly in your browser (replace with your actual
 - [Obituaries List (MVC)](http://localhost:5151/Obituaries)
 - [Obituaries API (example)](http://localhost:5151/api/Obituaries)
 
-_Note: Some endpoints may require authentication or may not be available until you scaffold the corresponding controller or page._
+### Scope
+- **Assignment 1**: Backend (ASP.NET Core MVC + Web API + Identity + EF Core + JWT) + Azure deployment with CI/CD pipelines
+- **Assignment 2**: Blazor WebAssembly frontend consuming the API
 
+
+Note: Some endpoints (Create, Edit, Delete) require authentication. Use the seeded account to test.
 
 ---
-*Last updated: September 28, 2025*
+*Last updated: October 05, 2025*

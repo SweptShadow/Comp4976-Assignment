@@ -28,8 +28,8 @@ namespace ObituaryApp.Models
         [Display(Name = "Photo")]
         public string? PhotoPath { get; set; }
 
-        [Required]
-        public string CreatedBy { get; set; } = string.Empty;
+        [Display(Name = "Created By")]
+        public string? CreatedBy { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public DateTime ModifiedDate { get; set; } = DateTime.UtcNow;
