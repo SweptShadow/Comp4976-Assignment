@@ -86,7 +86,7 @@ Comp4976-Assignment/
   - Removed global JWT default scheme override
   - Documented correct setup for Identity (cookie) and JWT (API) authentication
   - Added comments to clarify usage and prevent future errors
-
+- [x] Image upload handling implemented (server-side): uploaded photos are saved to `wwwroot/uploads` and `PhotoPath` stores the relative path; Create/Edit/Details views updated accordingly
 
 ## Requirements Progress (Backend)
 
@@ -101,10 +101,12 @@ Comp4976-Assignment/
 - Restrict edit/delete to creator or admin
 - Add obituary listing with pagination and search
 - Complete RESTful API endpoints for CRUD and JSON responses
+- Add photo upload handling
 
 ### In Progress / Next Steps
-- Add photo upload handling
 - Azure deployment and DevOps pipelines
+  - Azure deployment / CI-CD: no Dockerfile, no GitHub Actions or Azure pipelines present. Deployment is not yet implemented.
+  - Production image storage: currently images are stored in `wwwroot/uploads` (suitable for development). For production and Azure deployments it's recommended to use Azure Blob Storage.
 - Double checking all requirements for Assignment 1
 - Assignment 2: Blazor WebAssembly frontend (separate project)
 
@@ -148,4 +150,4 @@ You can reach these endpoints directly in your browser (replace with your actual
 Note: Some endpoints (Create, Edit, Delete) require authentication. Use the seeded account to test.
 
 ---
-*Last updated: October 05, 2025*
+*Last updated: October 06, 2025*

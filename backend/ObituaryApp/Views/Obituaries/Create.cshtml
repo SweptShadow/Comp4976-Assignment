@@ -11,7 +11,7 @@
 
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+    <form asp-action="Create" enctype="multipart/form-data">
 
             <div asp-validation-summary="All" class="text-danger"></div>
 
@@ -40,9 +40,9 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="PhotoPath" class="control-label"></label>
-                <input asp-for="PhotoPath" class="form-control" />
-                <span asp-validation-for="PhotoPath" class="text-danger"></span>
+                <label class="control-label">Photo</label>
+                <input type="file" name="photoFile" accept="image/*" class="form-control-file" />
+                <small class="form-text text-muted">Optional. Upload a JPG/PNG image.</small>
             </div>
 
             <div class="form-group">

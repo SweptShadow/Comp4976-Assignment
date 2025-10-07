@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+    <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
@@ -34,9 +34,16 @@
                 <span asp-validation-for="Biography" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="PhotoPath" class="control-label"></label>
-                <input asp-for="PhotoPath" class="form-control" />
-                <span asp-validation-for="PhotoPath" class="text-danger"></span>
+                <label class="control-label">Current Photo</label>
+                @if (!string.IsNullOrWhiteSpace(Model.PhotoPath))
+                {
+                    <div>
+                        <img src="@Url.Content("~/" + Model.PhotoPath)" alt="Photo" style="max-width:200px;max-height:200px;" />
+                    </div>
+                }
+                <label class="control-label">Replace Photo</label>
+                <input type="file" name="photoFile" accept="image/*" class="form-control-file" />
+                <small class="form-text text-muted">Leave empty to keep existing photo.</small>
             </div>
             <div class="form-group">
                 <label asp-for="CreatedBy" class="control-label"></label>

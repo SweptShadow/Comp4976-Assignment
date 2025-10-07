@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
@@ -85,7 +87,7 @@ namespace ObituaryApp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FullName,DateOfBirth,DateOfDeath,Biography")] Obituary obituary)
+        public async Task<IActionResult> Create([Bind("FullName,DateOfBirth,DateOfDeath,Biography")] Obituary obituary, IFormFile? photoFile)
         {
             if (obituary.DateOfDeath < obituary.DateOfBirth)
             {
@@ -100,6 +102,19 @@ namespace ObituaryApp.Controllers
             obituary.CreatedBy = userId;
             obituary.CreatedDate = DateTime.UtcNow;
             obituary.ModifiedDate = DateTime.UtcNow;
+            // Handle uploaded photo file (if provided)
+            if (photoFile != null && photoFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(photoFile.FileName);
+                var fullPath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await photoFile.CopyToAsync(stream);
+                }
+                obituary.PhotoPath = Path.Combine("uploads", uniqueFileName).Replace("\\", "/");
+            }
 
             _context.Add(obituary);
             await _context.SaveChangesAsync();
@@ -137,7 +152,7 @@ namespace ObituaryApp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,DateOfBirth,DateOfDeath,Biography")] Obituary obituary)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,DateOfBirth,DateOfDeath,Biography")] Obituary obituary, IFormFile? photoFile)
         {
             if (id != obituary.Id) return NotFound();
 
@@ -158,6 +173,31 @@ namespace ObituaryApp.Controllers
             existing.DateOfDeath = obituary.DateOfDeath;
             existing.Biography = obituary.Biography;
             existing.ModifiedDate = DateTime.UtcNow;
+
+            // Handle uploaded photo (replace existing if provided)
+            if (photoFile != null && photoFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                // Delete old file if exists
+                if (!string.IsNullOrWhiteSpace(existing.PhotoPath))
+                {
+                    var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existing.PhotoPath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+                    if (System.IO.File.Exists(oldPath))
+                    {
+                        try { System.IO.File.Delete(oldPath); } catch { /* ignore errors */ }
+                    }
+                }
+
+                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(photoFile.FileName);
+                var fullPath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await photoFile.CopyToAsync(stream);
+                }
+                existing.PhotoPath = Path.Combine("uploads", uniqueFileName).Replace("\\", "/");
+            }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
