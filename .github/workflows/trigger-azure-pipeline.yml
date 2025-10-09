@@ -1,0 +1,82 @@
+name: Build and trigger Azure DevOps pipeline
+
+name: Build and trigger Azure DevOps pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (quick check)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore backend
+        run: dotnet restore backend/ObituaryApp/ObituaryApp.csproj
+
+      - name: Build backend
+        run: dotnet build backend/ObituaryApp/ObituaryApp.csproj --configuration Release --no-restore
+
+      - name: Optionally restore and build frontend
+        run: |
+          if [ -d "frontend/ObituaryApp.Client" ]; then
+            dotnet restore frontend/ObituaryApp.Client/ObituaryApp.Client.csproj
+            dotnet build frontend/ObituaryApp.Client/ObituaryApp.Client.csproj --configuration Release --no-restore
+          else
+            echo "No frontend project detected - skipping"
+          fi
+
+  trigger-devops:
+    name: Trigger Azure DevOps pipeline
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Azure DevOps pipeline via REST
+        env:
+          AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+          AZURE_DEVOPS_ORG: ${{ secrets.AZURE_DEVOPS_ORG }}
+          AZURE_DEVOPS_PROJECT: ${{ secrets.AZURE_DEVOPS_PROJECT }}
+          AZURE_DEVOPS_PIPELINE_ID: ${{ secrets.AZURE_DEVOPS_PIPELINE_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${AZURE_DEVOPS_PAT-}" ]; then echo "AZURE_DEVOPS_PAT secret is required"; exit 1; fi
+          if [ -z "${AZURE_DEVOPS_ORG-}" ] || [ -z "${AZURE_DEVOPS_PROJECT-}" ] || [ -z "${AZURE_DEVOPS_PIPELINE_ID-}" ]; then
+            echo "AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT and AZURE_DEVOPS_PIPELINE_ID must be set as repository secrets"; exit 1;
+          fi
+          TRIGGER_URL="https://dev.azure.com/${AZURE_DEVOPS_ORG}/${AZURE_DEVOPS_PROJECT}/_apis/pipelines/${AZURE_DEVOPS_PIPELINE_ID}/runs?api-version=7.1"
+          BODY='{"resources": {"repositories": {"self": {"refName": "refs/heads/main"}}}}'
+          echo "Triggering Azure DevOps pipeline at $TRIGGER_URL"
+          RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Basic $(echo -n :${AZURE_DEVOPS_PAT} | base64)" -d "$BODY" "$TRIGGER_URL")
+          echo "Response: $RESPONSE"
+          if command -v jq >/dev/null 2>&1; then
+            RUN_ID=$(echo "$RESPONSE" | jq -r '.id')
+          else
+            RUN_ID=$(echo "$RESPONSE" | sed -n 's/.*"id"[^0-9]*\([0-9]*\).*/\1/p')
+          fi
+          if [ "$RUN_ID" = "null" ] || [ -z "$RUN_ID" ]; then echo "Failed to trigger pipeline"; exit 1; fi
+          echo "Triggered pipeline run id: $RUN_ID"
+
+      - name: Info
+        if: ${{ always() }}
+        run: |
+          echo "Pipeline has been queued in Azure DevOps. Monitor it in your Azure DevOps project."
+                RUN_ID=$(echo "$RESPONSE" | jq -r '.id')
+              else
+                RUN_ID=$(echo "$RESPONSE" | sed -n 's/.*"id"[^0-9]*\([0-9]*\).*/\1/p')
+              fi
+              if [ "$RUN_ID" = "null" ] || [ -z "$RUN_ID" ]; then echo "Failed to trigger pipeline"; exit 1; fi
+              echo "Triggered pipeline run id: $RUN_ID"
+
+          - name: Wait for pipeline (info)
+            if: ${{ always() }}
+            run: |
+              echo "Pipeline triggered. Monitor run in Azure DevOps if you want to follow progress."
