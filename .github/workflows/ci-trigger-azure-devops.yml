@@ -1,0 +1,44 @@
+name: CI -> Trigger Azure DevOps Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore
+      run: dotnet restore backend/ObituaryApp
+
+    - name: Build
+      run: dotnet build backend/ObituaryApp -c Release --no-restore
+
+    - name: Publish
+      run: dotnet publish backend/ObituaryApp -c Release -o ./publish
+
+    - name: Zip artifact
+      run: |
+        Compress-Archive -Path ./publish/* -DestinationPath artifact.zip
+
+    - name: Trigger Azure DevOps Pipeline
+      env:
+        AZURE_DEVOPS_ORG: ${{ secrets.AZURE_DEVOPS_ORG }}
+        AZURE_DEVOPS_PROJECT: ${{ secrets.AZURE_DEVOPS_PROJECT }}
+        AZURE_DEVOPS_PIPELINE_ID: ${{ secrets.AZURE_DEVOPS_PIPELINE_ID }}
+        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+      run: |
+        $base = "https://dev.azure.com/$env:AZURE_DEVOPS_ORG/$env:AZURE_DEVOPS_PROJECT/_apis/pipelines/$env:AZURE_DEVOPS_PIPELINE_ID/runs?api-version=6.0-preview.1"
+        $body = @{ resources = @{ repositories = @{ self = @{ refName = "refs/heads/main" } } } } | ConvertTo-Json
+        $pat = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$env:AZURE_DEVOPS_PAT"))
+        $response = Invoke-RestMethod -Method Post -Uri $base -Headers @{ Authorization = "Basic $pat" } -Body $body -ContentType "application/json"
+        Write-Host "Triggered Azure DevOps pipeline. Response:`n$response" 

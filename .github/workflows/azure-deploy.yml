@@ -1,0 +1,36 @@
+name: Build and Deploy to Azure Web App (Container)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Azure (optional)
+      if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Build and push image to Azure Container Registry (optional)
+      if: false # Optional: set to true and configure registry secrets if using ACR
+      run: echo "Set to true to enable ACR build/push"
+
+    - name: Deploy to Azure Web App using Publish Profile
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        images: ''
+
+    - name: Completed
+      run: echo "Deployment step finished. Configure secrets AZURE_WEBAPP_NAME and AZURE_WEBAPP_PUBLISH_PROFILE in repository settings."
