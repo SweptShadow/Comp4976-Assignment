@@ -70,6 +70,9 @@ Thumbs.db
 appsettings.Local.json
 secrets.json
 
+# Ensure GitHub workflows are tracked even if other rules might accidentally ignore them
+!.github/
+
 # Static site generators (if used)
 .output/
 
