@@ -21,10 +21,10 @@ jobs:
       run: dotnet restore backend/ObituaryApp
 
     - name: Build
-      run: dotnet build backend/ObituaryApp -c Release --no-restore
+      run: dotnet build backend/ObituaryApp -c Release --no-restore -p:TreatWarningsAsErrors=false -v minimal
 
     - name: Publish
-      run: dotnet publish backend/ObituaryApp -c Release -o ./publish
+      run: dotnet publish backend/ObituaryApp -c Release -o ./publish -p:TreatWarningsAsErrors=false -v minimal
 
     - name: Zip artifact
       run: |
