@@ -249,7 +249,12 @@ namespace ObituaryApp.Migrations
                     b.Property<string>("PhotoPath")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("SubmittedByName")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("FullName");
 
@@ -305,6 +310,16 @@ namespace ObituaryApp.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ObituaryApp.Models.Obituary", b =>
+                {
+                    b.HasOne("ObituaryApp.Models.ApplicationUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("CreatedByUser");
                 });
 #pragma warning restore 612, 618
         }

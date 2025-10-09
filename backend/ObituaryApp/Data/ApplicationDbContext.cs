@@ -36,6 +36,13 @@ namespace ObituaryApp.Data
             builder.Entity<Obituary>()
                 .HasIndex(o => o.FullName);
 
+            // Add relationship between Obituary and ApplicationUser
+            builder.Entity<Obituary>()
+                .HasOne(o => o.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(o => o.CreatedBy)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // Future relationship example:
             // builder.Entity<Obituary>()
             //     .HasMany(o => o.Photos)

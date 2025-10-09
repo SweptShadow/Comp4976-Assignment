@@ -10,34 +10,34 @@
     <h4>Obituary</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.FullName)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.FullName)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.DateOfBirth)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.DateOfBirth)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.DateOfDeath)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.DateOfDeath)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Biography)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Biography)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             Photo
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @if (!string.IsNullOrWhiteSpace(Model.PhotoPath))
             {
                 <img src="@Url.Content("~/" + Model.PhotoPath)" alt="Photo" style="max-width:300px;max-height:300px;" />
@@ -47,22 +47,29 @@
                 <span>No photo provided.</span>
             }
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedBy)
+        <dt class="col-sm-2">
+            @if (!string.IsNullOrEmpty(Model.SubmittedByName))
+            {
+                <text>Submitted By</text>
+            }
+            else
+            {
+                <text>Created By</text>
+            }
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedBy)
+        <dd class="col-sm-10">
+            @Model.CreatedByDisplayName
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.CreatedDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.CreatedDate)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ModifiedDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ModifiedDate)
         </dd>
     </dl>

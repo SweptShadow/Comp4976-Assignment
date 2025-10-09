@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ObituaryApp.Models
 {
@@ -30,6 +31,19 @@ namespace ObituaryApp.Models
 
         [Display(Name = "Created By")]
         public string? CreatedBy { get; set; }
+
+        // Navigation property for the user who created this obituary
+        public virtual ApplicationUser? CreatedByUser { get; set; }
+
+        // For non-authenticated users submitting obituaries
+        [Display(Name = "Submitted By")]
+        public string? SubmittedByName { get; set; }
+
+        // Computed property for display name
+        [NotMapped]
+        public string CreatedByDisplayName =>
+            !string.IsNullOrEmpty(SubmittedByName) ? SubmittedByName :
+            CreatedByUser?.UserName ?? "Unknown User";
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public DateTime ModifiedDate { get; set; } = DateTime.UtcNow;

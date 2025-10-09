@@ -31,7 +31,7 @@ namespace ObituaryApp.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(string? search, int page = 1, int pageSize = 10)
         {
-            var query = _context.Obituaries.AsNoTracking();
+            var query = _context.Obituaries.Include(o => o.CreatedByUser).AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(o => o.FullName.Contains(search));
@@ -61,6 +61,7 @@ namespace ObituaryApp.Controllers
             }
 
             var obituary = await _context.Obituaries
+                .Include(o => o.CreatedByUser)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (obituary == null)
             {
@@ -81,25 +82,34 @@ namespace ObituaryApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         /**
          * Creates a new obituary.
-         * Only authenticated users can create.
-         * Sets CreatedBy automatically from logged-in user.
+         * Authenticated users: Sets CreatedBy automatically from logged-in user.
+         * Non-authenticated users: Must provide SubmittedByName.
          */
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FullName,DateOfBirth,DateOfDeath,Biography")] Obituary obituary, IFormFile? photoFile)
+        public async Task<IActionResult> Create([Bind("FullName,DateOfBirth,DateOfDeath,Biography,SubmittedByName")] Obituary obituary, IFormFile? photoFile)
         {
             if (obituary.DateOfDeath < obituary.DateOfBirth)
             {
                 ModelState.AddModelError(nameof(obituary.DateOfDeath), "Date of death cannot be before date of birth.");
             }
 
+            // If user is not authenticated, require SubmittedByName
+            if (User.Identity?.IsAuthenticated != true && string.IsNullOrWhiteSpace(obituary.SubmittedByName))
+            {
+                ModelState.AddModelError(nameof(obituary.SubmittedByName), "Submitted By name is required for anonymous submissions.");
+            }
+
             if (!ModelState.IsValid) return View(obituary);
 
-            var userId = User.GetUserId();
-            if (userId == null) return Forbid();
+            // Set CreatedBy for authenticated users
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.GetUserId();
+                if (userId == null) return Forbid();
+                obituary.CreatedBy = userId;
+            }
 
-            obituary.CreatedBy = userId;
             obituary.CreatedDate = DateTime.UtcNow;
             obituary.ModifiedDate = DateTime.UtcNow;
             // Handle uploaded photo file (if provided)

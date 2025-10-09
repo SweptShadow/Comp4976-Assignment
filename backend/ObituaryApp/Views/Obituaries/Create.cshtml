@@ -11,7 +11,7 @@
 
 <div class="row">
     <div class="col-md-4">
-    <form asp-action="Create" enctype="multipart/form-data">
+        <form asp-action="Create" enctype="multipart/form-data">
 
             <div asp-validation-summary="All" class="text-danger"></div>
 
@@ -44,6 +44,16 @@
                 <input type="file" name="photoFile" accept="image/*" class="form-control-file" />
                 <small class="form-text text-muted">Optional. Upload a JPG/PNG image.</small>
             </div>
+
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <div class="form-group">
+                    <label asp-for="SubmittedByName" class="control-label">Submitted By (Required)</label>
+                    <input asp-for="SubmittedByName" class="form-control" required />
+                    <span asp-validation-for="SubmittedByName" class="text-danger"></span>
+                    <small class="form-text text-muted">Please provide your name for this submission.</small>
+                </div>
+            }
 
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

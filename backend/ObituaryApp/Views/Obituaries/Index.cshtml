@@ -7,12 +7,13 @@
 <h1 class="mb-3">Obituaries</h1>
 <p class="text-muted">Browse, search, and manage obituary entries.</p>
 
-<form asp-action="Index" method="get" class="form-inline mb-3">
+<form asp-action="Index" method="get" class="form-inline mb-4">
     <input type="text" name="search" value="@ViewBag.Search" placeholder="Search by name" class="form-control mr-2" />
+    <br>
     <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
-<p>
+<p class="mb-4">
     <a asp-action="Create" class="btn btn-success">+ Create New Obituary</a>
 </p>
 
@@ -43,8 +44,7 @@
 
                 <td>
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
-                    @if (User.Identity.IsAuthenticated && (User.IsInRole("admin") || item.CreatedBy ==
-                                    User.FindFirst("sub")?.Value))
+                    @if (User.Identity.IsAuthenticated && (User.IsInRole("admin") || item.CreatedBy == User.GetUserId()))
                     {
                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
                         <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
@@ -61,11 +61,13 @@
     <div>
         @if (ViewBag.Page > 1)
         {
-            <a asp-action="Index" asp-route-page="@(ViewBag.Page - 1)" asp-route-search="@ViewBag.Search" class="btn btn-outline-secondary btn-sm">Previous</a>
+            <a asp-action="Index" asp-route-page="@(ViewBag.Page - 1)" asp-route-search="@ViewBag.Search"
+                class="btn btn-outline-secondary btn-sm">Previous</a>
         }
         @if ((ViewBag.Page * ViewBag.PageSize) < ViewBag.Total)
         {
-            <a asp-action="Index" asp-route-page="@(ViewBag.Page + 1)" asp-route-search="@ViewBag.Search" class="btn btn-outline-secondary btn-sm">Next</a>
+            <a asp-action="Index" asp-route-page="@(ViewBag.Page + 1)" asp-route-search="@ViewBag.Search"
+                class="btn btn-outline-secondary btn-sm">Next</a>
         }
     </div>
 </div>
