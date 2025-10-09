@@ -37,6 +37,16 @@ jobs:
         apt-get update && apt-get install -y zip || true
         zip -r publish.zip ./publish
 
+    - name: Debug publish profile and package
+      env:
+        PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+      run: |
+        echo "WEBAPP_NAME (from secret): '${WEBAPP_NAME}'"
+        echo -n "PUBLISH_PROFILE size (bytes): "; printf "%s" "$PUBLISH_PROFILE" | wc -c
+        echo "Publish.zip exists? "; if [ -f publish.zip ]; then echo "yes"; ls -lh publish.zip; else echo "no"; fi
+        echo "Publish preview (first 200 chars):"; printf "%s" "$PUBLISH_PROFILE" | head -c 200 || true
+
     - name: Deploy to Azure Web App using Publish Profile
       uses: azure/webapps-deploy@v2
       with:
