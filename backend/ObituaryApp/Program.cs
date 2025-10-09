@@ -30,10 +30,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequiredLength = 8;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()  // 👆 "Store users in MY database"
-.AddDefaultTokenProviders()
-// To enable default Identity UI (scaffolded pages), uncomment the next line:
 .AddDefaultUI()
-;
+.AddDefaultTokenProviders(); // Add default token providers so Identity can generate confirmation and reset tokens
+
+// Add custom services
+builder.Services.AddScoped<IJwtService, JwtService>();
+// Blob storage service (Azure Blob). Provide configuration in appsettings.json under "AzureBlob:ConnectionString" and "AzureBlob:ContainerName".
+builder.Services.AddSingleton<ObituaryApp.Services.IBlobService, ObituaryApp.Services.BlobService>();
 
 // Register JWT authentication (for API endpoints)
 // DO NOT override the default scheme globally, to avoid conflict with Identity
