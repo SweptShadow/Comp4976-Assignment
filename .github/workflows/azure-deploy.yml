@@ -47,7 +47,33 @@ jobs:
         echo "Publish.zip exists? "; if [ -f publish.zip ]; then echo "yes"; ls -lh publish.zip; else echo "no"; fi
         echo "Publish preview (first 200 chars):"; printf "%s" "$PUBLISH_PROFILE" | head -c 200 || true
 
-    - name: Deploy to Azure Web App using Publish Profile
+    - name: Try Kudu ZipDeploy (direct)
+      id: kudu-deploy
+      env:
+        PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+      run: |
+        set -e
+        echo "$PUBLISH_PROFILE" > publish_profile.xml
+        # Extract ZipDeploy credentials from publish profile
+        USER=$(grep -oP 'publishMethod="ZipDeploy"[^>]*userName="\K[^"]+' publish_profile.xml || true)
+        PWD=$(grep -oP 'publishMethod="ZipDeploy"[^>]*userPWD="\K[^"]+' publish_profile.xml || true)
+        if [ -z "$USER" ] || [ -z "$PWD" ]; then
+          echo "Could not extract ZipDeploy credentials from publish profile."
+          exit 2
+        fi
+        echo "Deploying publish.zip to https://$WEBAPP_NAME.scm.azurewebsites.net/api/zipdeploy"
+        # Use multipart form upload
+        HTTP_CODE=$(curl -s -o /tmp/kudu_response.txt -w "%{http_code}" -u "$USER:$PWD" -F package=@publish.zip "https://$WEBAPP_NAME.scm.azurewebsites.net/api/zipdeploy")
+        echo "Kudu response HTTP code: $HTTP_CODE"
+        cat /tmp/kudu_response.txt || true
+        if [ "$HTTP_CODE" -ge 400 ]; then
+          echo "Kudu ZipDeploy failed with HTTP $HTTP_CODE"
+          exit 3
+        fi
+
+    - name: Deploy to Azure Web App using Publish Profile (fallback)
+      if: ${{ steps.kudu-deploy.outcome != 'success' }}
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
