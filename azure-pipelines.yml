@@ -1,0 +1,86 @@
+# Azure DevOps pipeline to build backend and optional Blazor frontend and deploy to Azure App Service
+trigger: none
+
+variables:
+  buildConfiguration: 'Release'
+  webAppName: 'obituary-app1154'         # update in pipeline variables if different
+  azureServiceConnection: 'Azure-ServiceConnection' # service connection name in Azure DevOps
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build
+  jobs:
+  - job: BuildAndPublish
+    displayName: Build and publish artifacts
+    steps:
+    - checkout: self
+
+    - task: UseDotNet@2
+      displayName: Use .NET SDK
+      inputs:
+        packageType: 'sdk'
+        version: '8.0.x'
+
+    - script: |
+        dotnet restore backend/ObituaryApp/ObituaryApp.csproj
+      displayName: 'Restore backend'
+
+    - script: |
+        dotnet build backend/ObituaryApp/ObituaryApp.csproj -c $(buildConfiguration) --no-restore
+      displayName: 'Build backend'
+
+    # Optionally build frontend if folder exists
+    - script: |
+        if [ -d "frontend/ObituaryApp.Client" ]; then
+          echo "Found frontend; building Blazor WASM..."
+          dotnet restore frontend/ObituaryApp.Client/ObituaryApp.Client.csproj
+          dotnet build frontend/ObituaryApp.Client/ObituaryApp.Client.csproj -c $(buildConfiguration) --no-restore
+        else
+          echo "No frontend found; skipping frontend build"
+        fi
+      displayName: 'Build frontend (if present)'
+
+    - script: |
+        dotnet publish backend/ObituaryApp/ObituaryApp.csproj -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/backend --no-build
+      displayName: 'Publish backend'
+
+    - script: |
+        if [ -d "frontend/ObituaryApp.Client" ]; then
+          # Publish Blazor WASM to a staging folder and then copy into backend wwwroot
+          dotnet publish frontend/ObituaryApp.Client/ObituaryApp.Client.csproj -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/frontend --no-build
+          mkdir -p $(Build.ArtifactStagingDirectory)/backend/wwwroot
+          cp -r $(Build.ArtifactStagingDirectory)/frontend/wwwroot/* $(Build.ArtifactStagingDirectory)/backend/wwwroot/ || true
+        fi
+      displayName: 'Publish frontend and merge into backend wwwroot (if present)'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish backend artifact'
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/backend'
+        artifactName: 'backend-drop'
+
+- stage: Deploy
+  displayName: Deploy
+  dependsOn: Build
+  jobs:
+  - deployment: DeployToAppService
+    displayName: Deploy to Azure App Service
+    environment: 'production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: backend-drop
+
+          - task: AzureWebApp@1
+            displayName: 'Deploy backend to Azure App Service'
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              appType: 'webApp'
+              appName: '$(webAppName)'
+              package: '$(Pipeline.Workspace)/backend-drop'
+                    # end of pipeline
