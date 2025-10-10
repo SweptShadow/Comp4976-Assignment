@@ -16,11 +16,17 @@ namespace ObituaryApp.Controllers
 {
     public class ObituariesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+    private readonly ApplicationDbContext _context;
+    private readonly ObituaryApp.Services.IBlobService _blobService;
+    private readonly Microsoft.Extensions.Logging.ILogger<ObituariesController> _logger;
+    private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _env;
 
-        public ObituariesController(ApplicationDbContext context)
+        public ObituariesController(ApplicationDbContext context, ObituaryApp.Services.IBlobService blobService, Microsoft.Extensions.Logging.ILogger<ObituariesController> logger, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
         {
             _context = context;
+            _blobService = blobService;
+            _logger = logger;
+            _env = env;
         }
 
         // GET: Obituaries
@@ -115,15 +121,35 @@ namespace ObituaryApp.Controllers
             // Handle uploaded photo file (if provided)
             if (photoFile != null && photoFile.Length > 0)
             {
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(photoFile.FileName);
-                var fullPath = Path.Combine(uploadsFolder, uniqueFileName);
-                using (var stream = new FileStream(fullPath, FileMode.Create))
+                string? blobUrl = null;
+                try
                 {
-                    await photoFile.CopyToAsync(stream);
+                    // Try Azure Blob upload first (if configured). BlobService may throw if configured but failing.
+                    blobUrl = await _blobService.UploadFileAsync(photoFile);
                 }
-                obituary.PhotoPath = Path.Combine("uploads", uniqueFileName).Replace("\\", "/");
+                catch (Exception ex)
+                {
+                    // Log and fall back to local storage
+                    _logger?.LogError(ex, "Blob upload failed, falling back to local storage.");
+                    blobUrl = null;
+                }
+
+                if (!string.IsNullOrWhiteSpace(blobUrl))
+                {
+                    obituary.PhotoPath = blobUrl; // full blob url
+                }
+                else
+                {
+                    var uploadsFolder = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
+                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                    var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(photoFile.FileName);
+                    var fullPath = Path.Combine(uploadsFolder, uniqueFileName);
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        await photoFile.CopyToAsync(stream);
+                    }
+                    obituary.PhotoPath = Path.Combine("uploads", uniqueFileName).Replace("\\", "/");
+                }
             }
 
             _context.Add(obituary);
@@ -187,26 +213,50 @@ namespace ObituaryApp.Controllers
             // Handle uploaded photo (replace existing if provided)
             if (photoFile != null && photoFile.Length > 0)
             {
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-                // Delete old file if exists
-                if (!string.IsNullOrWhiteSpace(existing.PhotoPath))
+                // Try Blob upload first
+                string? blobUrl = null;
+                try
                 {
-                    var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existing.PhotoPath.Replace("/", Path.DirectorySeparatorChar.ToString()));
-                    if (System.IO.File.Exists(oldPath))
+                    blobUrl = await _blobService.UploadFileAsync(photoFile);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "Blob upload failed during Edit, falling back to local storage.");
+                    blobUrl = null;
+                }
+
+                if (!string.IsNullOrWhiteSpace(blobUrl))
+                {
+                    // If previous path looks like a URL, attempt to delete previously stored blob
+                    if (!string.IsNullOrWhiteSpace(existing.PhotoPath) && existing.PhotoPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                     {
-                        try { System.IO.File.Delete(oldPath); } catch { /* ignore errors */ }
+                        try { await _blobService.DeleteFileAsync(existing.PhotoPath); } catch (Exception ex) { _logger?.LogWarning(ex, "Failed to delete previous blob during Edit."); }
                     }
+                    existing.PhotoPath = blobUrl;
                 }
-
-                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(photoFile.FileName);
-                var fullPath = Path.Combine(uploadsFolder, uniqueFileName);
-                using (var stream = new FileStream(fullPath, FileMode.Create))
+                else
                 {
-                    await photoFile.CopyToAsync(stream);
+                    var uploadsFolder = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
+                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                    // Delete old local file if exists and previous PhotoPath is local
+                    if (!string.IsNullOrWhiteSpace(existing.PhotoPath) && !existing.PhotoPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var oldPath = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), existing.PhotoPath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+                        if (System.IO.File.Exists(oldPath))
+                        {
+                            try { System.IO.File.Delete(oldPath); } catch (Exception ex) { _logger?.LogWarning(ex, "Failed to delete previous local file during Edit."); }
+                        }
+                    }
+
+                    var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(photoFile.FileName);
+                    var fullPath = Path.Combine(uploadsFolder, uniqueFileName);
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        await photoFile.CopyToAsync(stream);
+                    }
+                    existing.PhotoPath = Path.Combine("uploads", uniqueFileName).Replace("\\", "/");
                 }
-                existing.PhotoPath = Path.Combine("uploads", uniqueFileName).Replace("\\", "/");
             }
 
             await _context.SaveChangesAsync();
