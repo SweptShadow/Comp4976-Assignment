@@ -117,6 +117,4 @@ stages:
                     tail -n +1 deploy_response.txt || true
                     if [ "$HTTP_CODE" -ge 400 ]; then
                       echo "ZipDeploy failed"; exit 1; fi
-                  displayName:
-                    "Deploy backend using Kudu ZipDeploy"
-                    # end of pipeline
+                  displayName: "Deploy backend using Kudu ZipDeploy"
