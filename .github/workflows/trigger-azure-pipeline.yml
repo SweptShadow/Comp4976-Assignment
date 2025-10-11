@@ -1,9 +1,13 @@
-name: Build and trigger Azure DevOps pipeline
+name: Build and trigger Azure DevOps pipeline (TEMPORARILY DISABLED)
 
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+# TEMPORARILY DISABLED - Using direct deploy for immediate testing
+# Will re-enable when Azure DevOps parallelism is available
+on: []
+
+# on:
+#   push:
+#     branches: [ main ]
+#   workflow_dispatch:
 
 jobs:
   build:

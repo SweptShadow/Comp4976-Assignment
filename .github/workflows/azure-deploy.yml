@@ -1,0 +1,42 @@
+# ENABLED - Direct Azure Deployment Workflow
+# Currently ENABLED for immediate testing
+# When Azure DevOps parallelism is available, can switch back to trigger-azure-pipeline.yml
+
+name: Direct Azure Deploy (ENABLED)
+
+# DISABLED - Commented out to enable direct deploy
+# on: []
+
+  # ENABLED - This will trigger on pushes to main
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore
+      run: dotnet restore backend/ObituaryApp
+
+    - name: Build
+      run: dotnet build backend/ObituaryApp -c Release --no-restore
+
+    - name: Publish
+      run: dotnet publish backend/ObituaryApp -c Release -o ./publish
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: obituary-app
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ./publish
