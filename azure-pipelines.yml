@@ -6,9 +6,9 @@ variables:
   webAppName: "obituary-app" # update in pipeline variables if different
   azureServiceConnection: "Azure-ServiceConnection" # service connection name in Azure DevOps (unused unless you re-enable that path)
   # When true, uses a publish profile secure file instead of a service connection
-  usePublishProfile: "false"
+  usePublishProfile: "true"
   # When true, deploys using Kudu ZipDeploy with basic auth creds (no service connection or publish profile required)
-  useKuduCredentials: "true"
+  useKuduCredentials: "false"
   kuduUser: ""
   kuduPassword: ""
 
@@ -74,7 +74,7 @@ stages:
     jobs:
       - deployment: DeployToAppService
         displayName: Deploy to Azure App Service
-        # environment: "production"  # Commented out - environment not created yet
+        environment: "production"  # Commented out - environment not created yet
         strategy:
           runOnce:
             deploy:
