@@ -56,13 +56,15 @@ jobs:
 
           echo "Triggering Azure DevOps pipeline at $TRIGGER_URL"
           echo "Request body: $BODY"
-          
-          # Create the auth header separately to avoid command substitution issues
-          AUTH_HEADER=$(echo -n ":${AZURE_DEVOPS_PAT}" | base64)
+          echo "PAT length: ${#AZURE_DEVOPS_PAT}"
           echo "Auth header created successfully"
           
           # Test the curl command with better error handling
           set +e  # Temporarily disable exit on error
+          
+          # Encode PAT properly for Azure DevOps
+          AUTH_HEADER=$(printf ":%s" "${AZURE_DEVOPS_PAT}" | base64 -w 0)
+          
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             -H "Content-Type: application/json" \
             -H "Authorization: Basic ${AUTH_HEADER}" \
