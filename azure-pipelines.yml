@@ -3,7 +3,7 @@ trigger: none
 
 variables:
   buildConfiguration: "Release"
-  webAppName: "obituary-app1154" # update in pipeline variables if different
+  webAppName: "obituary-app" # update in pipeline variables if different
   azureServiceConnection: "Azure-ServiceConnection" # service connection name in Azure DevOps (unused unless you re-enable that path)
   # When true, uses a publish profile secure file instead of a service connection
   usePublishProfile: "false"

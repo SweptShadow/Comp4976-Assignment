@@ -104,9 +104,9 @@ Comp4976-Assignment/
 - Add photo upload handling
 
 ### In Progress / Next Steps
-- Azure deployment and DevOps pipelines
-  - Azure deployment / CI-CD: no Dockerfile, no GitHub Actions or Azure pipelines present. Deployment is not yet implemented.
-  - Production image storage: currently images are stored in `wwwroot/uploads` (suitable for development). For production and Azure deployments it's recommended to use Azure Blob Storage.
+- ✅ Azure deployment completed! App is live at: https://obituary-app.azurewebsites.net
+- Azure Blob Storage for production image storage (currently using local wwwroot/uploads)
+- Azure DevOps CI/CD pipeline integration
 - Double checking all requirements for Assignment 1
 - Assignment 2: Blazor WebAssembly frontend (separate project)
 
