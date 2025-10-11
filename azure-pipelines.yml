@@ -3,12 +3,12 @@ trigger: none
 
 variables:
   buildConfiguration: "Release"
-  webAppName: "obituary-app" # update in pipeline variables if different
+  webAppName: "obituary-app" # Your colleague's Azure App Service name
   azureServiceConnection: "Azure-ServiceConnection" # service connection name in Azure DevOps (unused unless you re-enable that path)
   # When true, uses a publish profile secure file instead of a service connection
-  usePublishProfile: "false"
+  usePublishProfile: "true"
   # When true, deploys using Kudu ZipDeploy with basic auth creds (no service connection or publish profile required)
-  useKuduCredentials: "true"
+  useKuduCredentials: "false"
   kuduUser: ""
   kuduPassword: ""
 
@@ -95,7 +95,7 @@ stages:
                 - task: DownloadSecureFile@1
                   name: GetPublishProfile
                   inputs:
-                    secureFile: "publishprofile-obituary-app1154.xml"
+                    secureFile: "obituary-app-publish-profile.xml"
 
                 - task: AzureRmWebAppDeployment@4
                   displayName: "Deploy backend using publish profile"
