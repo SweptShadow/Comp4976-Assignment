@@ -55,10 +55,25 @@ jobs:
           BODY='{"resources": {"repositories": {"self": {"refName": "refs/heads/main"}}}}'
 
           echo "Triggering Azure DevOps pipeline at $TRIGGER_URL"
+          echo "Request body: $BODY"
+          
+          # Test the curl command with better error handling
+          set +e  # Temporarily disable exit on error
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             -H "Content-Type: application/json" \
             -H "Authorization: Basic $(echo -n :${AZURE_DEVOPS_PAT} | base64)" \
-            -d "$BODY" "$TRIGGER_URL")
+            -d "$BODY" "$TRIGGER_URL" 2>&1)
+          CURL_EXIT_CODE=$?
+          set -e  # Re-enable exit on error
+          
+          echo "Curl exit code: $CURL_EXIT_CODE"
+          echo "Full response: $RESPONSE"
+          
+          if [ $CURL_EXIT_CODE -ne 0 ]; then
+            echo "Curl command failed with exit code $CURL_EXIT_CODE"
+            echo "This might be a network issue, authentication problem, or invalid URL"
+            exit 1
+          fi
 
           HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
           BODY_TEXT=$(echo "$RESPONSE" | sed '$d')
