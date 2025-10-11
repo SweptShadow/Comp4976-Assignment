@@ -150,4 +150,4 @@ You can reach these endpoints directly in your browser (replace with your actual
 Note: Some endpoints (Create, Edit, Delete) require authentication. Use the seeded account to test.
 
 ---
-*Last updated: October 06, 2025*
+*Last updated: October 10, 2025*
