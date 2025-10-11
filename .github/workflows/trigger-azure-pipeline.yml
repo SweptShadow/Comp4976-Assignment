@@ -51,7 +51,7 @@ jobs:
             echo "AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT and AZURE_DEVOPS_PIPELINE_ID must be set as repository secrets"; exit 1;
           fi
 
-          TRIGGER_URL="https://dev.azure.com/${AZURE_DEVOPS_ORG}/${AZURE_DEVOPS_PROJECT}/_apis/pipelines/${AZURE_DEVOPS_PIPELINE_ID}/runs?api-version=7.1-preview.1"
+          TRIGGER_URL="https://dev.azure.com/${AZURE_DEVOPS_ORG}/${AZURE_DEVOPS_PROJECT}/_apis/pipelines/${AZURE_DEVOPS_PIPELINE_ID}/runs?api-version=6.0-preview.1"
           BODY='{"resources": {"repositories": {"self": {"refName": "refs/heads/main"}}}}'
 
           echo "Triggering Azure DevOps pipeline at $TRIGGER_URL"
@@ -71,18 +71,21 @@ jobs:
             exit 1;
           fi
 
+          echo "Pipeline triggered successfully! HTTP Status: $HTTP_STATUS"
+          
+          # Try to extract run ID but don't fail if we can't
           if command -v jq >/dev/null 2>&1; then
-            RUN_ID=$(echo "$BODY_TEXT" | jq -r '.id')
+            RUN_ID=$(echo "$BODY_TEXT" | jq -r '.id' 2>/dev/null || echo "unknown")
           else
-            RUN_ID=$(echo "$BODY_TEXT" | sed -n 's/.*"id"[^0-9]*\([0-9]*\).*/\1/p')
+            RUN_ID=$(echo "$BODY_TEXT" | sed -n 's/.*"id"[^0-9]*\([0-9]*\).*/\1/p' 2>/dev/null || echo "unknown")
           fi
 
-          if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
-            echo "Triggered but could not determine run id. Response: $BODY_TEXT";
-            exit 1;
+          if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ] || [ "$RUN_ID" = "unknown" ]; then
+            echo "Pipeline triggered successfully but could not determine run ID from response."
+            echo "Check Azure DevOps to see the triggered run."
+          else
+            echo "Triggered pipeline run id: $RUN_ID"
           fi
-
-          echo "Triggered pipeline run id: $RUN_ID"
 
       - name: Notify
         if: ${{ always() }}

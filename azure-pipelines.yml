@@ -74,7 +74,7 @@ stages:
     jobs:
       - deployment: DeployToAppService
         displayName: Deploy to Azure App Service
-        environment: "production"  # Commented out - environment not created yet
+        environment: "production"
         strategy:
           runOnce:
             deploy:
