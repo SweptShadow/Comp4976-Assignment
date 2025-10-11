@@ -3,12 +3,12 @@ trigger: none
 
 variables:
   buildConfiguration: "Release"
-  webAppName: "obituary-app" # Your colleague's Azure App Service name
+  webAppName: "obituary-app" # update in pipeline variables if different
   azureServiceConnection: "Azure-ServiceConnection" # service connection name in Azure DevOps (unused unless you re-enable that path)
   # When true, uses a publish profile secure file instead of a service connection
-  usePublishProfile: "true"
+  usePublishProfile: "false"
   # When true, deploys using Kudu ZipDeploy with basic auth creds (no service connection or publish profile required)
-  useKuduCredentials: "false"
+  useKuduCredentials: "true"
   kuduUser: ""
   kuduPassword: ""
 
@@ -82,39 +82,39 @@ stages:
                 - download: current
                   artifact: backend-drop
 
-              # Service connection deployment removed to avoid validation errors in restricted tenants.
+                # Service connection deployment removed to avoid validation errors in restricted tenants.
 
-              # If you cannot create/authorize an Azure service connection in this project,
-              # use a publish profile secure file instead. Upload your App Service publish
-              # profile to Azure DevOps Project -> Pipelines -> Library -> Secure files
-              # with the name: obituary-publish-profile.publishsettings and grant the
-              # pipeline permission to use it. The steps below will consume that file.
+                # If you cannot create/authorize an Azure service connection in this project,
+                # use a publish profile secure file instead. Upload your App Service publish
+                # profile to Azure DevOps Project -> Pipelines -> Library -> Secure files
+                # with the name: obituary-publish-profile.publishsettings and grant the
+                # pipeline permission to use it. The steps below will consume that file.
 
-              # Publish profile deployment (included only when usePublishProfile == true)
-              ${{ if eq(variables.usePublishProfile, 'true') }}:
-                - task: DownloadSecureFile@1
-                  name: GetPublishProfile
-                  inputs:
-                    secureFile: "obituary-app-publish-profile.xml"
+                # Publish profile deployment (included only when usePublishProfile == true)
+                - ${{ if eq(variables.usePublishProfile, 'true') }}:
+                  - task: DownloadSecureFile@1
+                    name: GetPublishProfile
+                    inputs:
+                      secureFile: "publishprofile-obituary-app1154.xml"
 
-                - task: AzureRmWebAppDeployment@4
-                  displayName: "Deploy backend using publish profile"
-                  inputs:
-                    Package: "$(Pipeline.Workspace)/backend-drop"
-                    PublishProfile: "$(GetPublishProfile.secureFilePath)"
+                  - task: AzureRmWebAppDeployment@4
+                    displayName: "Deploy backend using publish profile"
+                    inputs:
+                      Package: "$(Pipeline.Workspace)/backend-drop"
+                      PublishProfile: "$(GetPublishProfile.secureFilePath)"
 
-              # Kudu ZipDeploy (included only when useKuduCredentials == true)
-              ${{ if eq(variables.useKuduCredentials, 'true') }}:
-                - script: |
-                    set -e
-                    cd "$(Pipeline.Workspace)/backend-drop"
-                    echo "Zipping backend artifact..."
-                    zip -r ../backend.zip . >/dev/null
-                    cd ..
-                    echo "Deploying to Kudu ZipDeploy for $(webAppName)"
-                    HTTP_CODE=$(curl -s -o deploy_response.txt -w "%{http_code}" -u "$(kuduUser):$(kuduPassword)" -F package=@backend.zip "https://$(webAppName).scm.azurewebsites.net/api/zipdeploy")
-                    echo "Kudu HTTP: $HTTP_CODE"
-                    tail -n +1 deploy_response.txt || true
-                    if [ "$HTTP_CODE" -ge 400 ]; then
-                      echo "ZipDeploy failed"; exit 1; fi
-                  displayName: "Deploy backend using Kudu ZipDeploy"
+                # Kudu ZipDeploy (included only when useKuduCredentials == true)
+                - ${{ if eq(variables.useKuduCredentials, 'true') }}:
+                  - script: |
+                      set -e
+                      cd "$(Pipeline.Workspace)/backend-drop"
+                      echo "Zipping backend artifact..."
+                      zip -r ../backend.zip . >/dev/null
+                      cd ..
+                      echo "Deploying to Kudu ZipDeploy for $(webAppName)"
+                      HTTP_CODE=$(curl -s -o deploy_response.txt -w "%{http_code}" -u "$(kuduUser):$(kuduPassword)" -F package=@backend.zip "https://$(webAppName).scm.azurewebsites.net/api/zipdeploy")
+                      echo "Kudu HTTP: $HTTP_CODE"
+                      tail -n +1 deploy_response.txt || true
+                      if [ "$HTTP_CODE" -ge 400 ]; then
+                        echo "ZipDeploy failed"; exit 1; fi
+                    displayName: "Deploy backend using Kudu ZipDeploy"
