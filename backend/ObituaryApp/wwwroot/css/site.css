@@ -23,6 +23,17 @@ body {
   /* Light gray background for testing CI/CD pipeline */
 }
 
+/* UI tweaks for obituary cards */
+.obituary-card:hover {
+  transform: translateY(-2px);
+  transition: transform 120ms ease-in-out, box-shadow 120ms ease-in-out;
+  box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+}
+
+.object-fit-cover {
+  object-fit: cover;
+}
+
 .form-floating>.form-control-plaintext::placeholder, .form-floating>.form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;
