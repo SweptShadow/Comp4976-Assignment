@@ -68,7 +68,14 @@ h1, h2, h3 {
   color: #fff;
   border-color: #212529;
 }
-.btn-brand:hover { background-color: #181b1e; border-color: #181b1e; }
+.btn-brand:hover,
+.btn-brand:focus,
+.btn-brand:active {
+  background-color: #fff;
+  color: #212529;
+  border-color: #212529;
+}
+.
 .btn-outline-brand {
   color: #212529;
   border-color: #212529;
