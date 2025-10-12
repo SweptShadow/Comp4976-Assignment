@@ -21,12 +21,29 @@
         }
     </div>
     <div class="col-12 col-md-8">
-        <h1 class="mb-1 obituary-name">@Model.FullName</h1>
-        <div class="text-muted mb-3">@Model.DateOfBirth.ToString("yyyy-MM-dd") – @Model.DateOfDeath.ToString("yyyy-MM-dd")</div>
-        <p class="lead">@Model.Biography</p>
+        <div class="mb-2">
+            <div class="detail-label">Name</div>
+            <h1 class="mb-1 obituary-name">@Model.FullName</h1>
+        </div>
+
+        <div class="row g-4 mb-3">
+            <div class="col-auto">
+                <div class="detail-label">Date of Birth</div>
+                <div>@Model.DateOfBirth.ToString("yyyy-MM-dd")</div>
+            </div>
+            <div class="col-auto">
+                <div class="detail-label">Date of Death</div>
+                <div>@Model.DateOfDeath.ToString("yyyy-MM-dd")</div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <div class="detail-label">Biography</div>
+            <p class="lead mb-0">@Model.Biography</p>
+        </div>
 
         <div class="mt-4">
-            <div class="small text-muted">@((!string.IsNullOrEmpty(Model.SubmittedByName)) ? "Submitted By" : "Created By")</div>
+            <div class="detail-label">@((!string.IsNullOrEmpty(Model.SubmittedByName)) ? "Submitted By" : "Created By")</div>
             <div>@Model.CreatedByDisplayName</div>
         </div>
 

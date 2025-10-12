@@ -48,6 +48,14 @@ body {
 /* Add a little breathing room before footer so last-row content doesn't touch the border */
 .footer { margin-top: 1.25rem; }
 
+/* Small muted section labels on details page */
+.detail-label {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #6c757d;
+}
+
 /* Headings use Inter (sans-serif) for consistency */
 h1, h2, h3 {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
