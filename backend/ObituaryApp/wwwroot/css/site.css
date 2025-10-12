@@ -80,10 +80,11 @@ h1, h2, h3 {
 
 /* Script-like biography excerpt styling inside cards */
 .obituary-card .obituary-bio {
-  font-family: 'Great Vibes', 'Brush Script MT', cursive;
-  font-size: 1.25rem;
-  line-height: 1.2;
-  color: #3f3a3a;
+  font-family: 'Great Vibes', 'Brush Script MT', 'Segoe Script', cursive !important;
+  font-size: 1.4rem;
+  line-height: 1.25;
+  font-weight: 400;
+  color: #2f2b2b;
 }
 
 .form-floating>.form-control-plaintext::placeholder, .form-floating>.form-control::placeholder {
