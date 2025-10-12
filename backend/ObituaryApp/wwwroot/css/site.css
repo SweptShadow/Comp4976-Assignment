@@ -85,8 +85,17 @@ h1, h2, h3 {
 .btn-outline-brand:focus,
 .btn-outline-brand:active {
   color: #fff;
-  background-color: #6c757d; /* bootstrap secondary gray */
-  border-color: #6c757d;
+  background-color: #adb5bd; /* lighter gray */
+  border-color: #adb5bd;
+}
+
+/* Make Bootstrap's outline-secondary (used on some Back to List buttons) lighter on hover too */
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus,
+.btn-outline-secondary:active {
+  color: #fff;
+  background-color: #adb5bd; /* lighter gray */
+  border-color: #adb5bd;
 }
 
 /* Elegant name styling for people */
