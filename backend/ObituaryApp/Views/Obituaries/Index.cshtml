@@ -45,7 +45,7 @@
                 <div class="card-body d-flex flex-column text-center">
                     <h5 class="card-title mb-1 obituary-name">@item.FullName</h5>
                     <div class="text-muted mb-2">@item.DateOfBirth.ToString("yyyy-MM-dd") – @item.DateOfDeath.ToString("yyyy-MM-dd")</div>
-                    <p class="card-text flex-grow-1 mx-auto">@(string.IsNullOrWhiteSpace(item.Biography) ? "" : (item.Biography.Length > 140 ? item.Biography.Substring(0, 140) + "..." : item.Biography))</p>
+                    <p class="card-text obituary-bio flex-grow-1 mx-auto">@(string.IsNullOrWhiteSpace(item.Biography) ? "" : (item.Biography.Length > 140 ? item.Biography.Substring(0, 140) + "..." : item.Biography))</p>
                     <div class="card-actions d-flex justify-content-center gap-2 w-100">
                         <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Details</a>
                         @if (User.Identity.IsAuthenticated && (User.IsInRole("admin") || item.CreatedBy == User.GetUserId()))
