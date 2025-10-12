@@ -10,7 +10,7 @@
         <small class="text-muted">Browse, search, and remember.</small>
     </div>
     <div>
-        <a asp-action="Create" class="btn btn-success">+ Create New</a>
+        <a asp-action="Create" class="btn btn-brand">+ Create New</a>
     </div>
     </div>
 
@@ -19,8 +19,8 @@
         <input type="text" name="search" value="@ViewBag.Search" placeholder="Search by name" class="form-control" />
     </div>
     <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Search</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        <button type="submit" class="btn btn-brand">Search</button>
+        <a asp-action="Index" class="btn btn-outline-brand">Clear</a>
     </div>
     </form>
 
@@ -34,11 +34,11 @@
             <div class="card h-100 shadow-sm obituary-card">
                 @if (!string.IsNullOrWhiteSpace(item.PhotoPath))
                 {
-                    <img class="card-img-top object-fit-cover" style="height: 180px;" src="@Url.Content("~" + "/" + item.PhotoPath.TrimStart('/'))" alt="@item.FullName" />
+                    <img class="card-img-top object-fit-contain" style="height: 220px;" src="@Url.Content("~" + "/" + item.PhotoPath.TrimStart('/'))" alt="@item.FullName" />
                 }
                 else
                 {
-                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-secondary" style="height: 180px; font-size: 2.25rem;">
+                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-secondary" style="height: 220px; font-size: 2.25rem;">
                         @initials
                     </div>
                 }
