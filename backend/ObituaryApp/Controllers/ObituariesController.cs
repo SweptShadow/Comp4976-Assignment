@@ -168,7 +168,9 @@ namespace ObituaryApp.Controllers
         {
             if (id == null) return NotFound();
 
-            var obituary = await _context.Obituaries.FindAsync(id);
+            var obituary = await _context.Obituaries
+                .Include(o => o.CreatedByUser)
+                .FirstOrDefaultAsync(o => o.Id == id);
             if (obituary == null) return NotFound();
 
             if (!CanModify(obituary)) return Forbid();

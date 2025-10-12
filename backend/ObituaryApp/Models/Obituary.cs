@@ -43,7 +43,9 @@ namespace ObituaryApp.Models
         [NotMapped]
         public string CreatedByDisplayName =>
             !string.IsNullOrEmpty(SubmittedByName) ? SubmittedByName :
-            CreatedByUser?.UserName ?? "Unknown User";
+            (!string.IsNullOrEmpty(CreatedByUser?.Email) ? CreatedByUser!.Email! :
+            (!string.IsNullOrEmpty(CreatedByUser?.UserName) ? CreatedByUser!.UserName! :
+            "Unknown User"));
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public DateTime ModifiedDate { get; set; } = DateTime.UtcNow;
