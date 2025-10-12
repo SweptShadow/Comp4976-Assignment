@@ -68,8 +68,14 @@ h1, h2, h3 {
 .obituary-name {
   font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', Times, serif;
   font-weight: 600;
-  letter-spacing: .5px;
-  color: #6f5b7a; /* soft plum to match sample */
+  letter-spacing: .03em;
+  color: #6d5a75; /* soft plum to match sample */
+}
+
+/* Larger, elegant name inside cards */
+.obituary-card .obituary-name {
+  font-size: 1.6rem;
+  line-height: 1.15;
 }
 
 .form-floating>.form-control-plaintext::placeholder, .form-floating>.form-control::placeholder {
