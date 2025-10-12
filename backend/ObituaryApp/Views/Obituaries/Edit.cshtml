@@ -4,71 +4,64 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h1 class="mb-1">Edit Obituary</h1>
+                <p class="text-muted mb-4">Update the details below.</p>
 
-<h4>Obituary</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-    <form asp-action="Edit" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="FullName" class="control-label"></label>
-                <input asp-for="FullName" class="form-control" />
-                <span asp-validation-for="FullName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DateOfBirth" class="control-label"></label>
-                <input asp-for="DateOfBirth" class="form-control" />
-                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DateOfDeath" class="control-label"></label>
-                <input asp-for="DateOfDeath" class="form-control" />
-                <span asp-validation-for="DateOfDeath" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Biography" class="control-label"></label>
-                <input asp-for="Biography" class="form-control" />
-                <span asp-validation-for="Biography" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label class="control-label">Current Photo</label>
-                @if (!string.IsNullOrWhiteSpace(Model.PhotoPath))
-                {
-                    <div>
-                        <img src="@Url.Content("~/" + Model.PhotoPath)" alt="Photo" style="max-width:200px;max-height:200px;" />
+                <form asp-action="Edit" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
                     </div>
-                }
-                <label class="control-label">Replace Photo</label>
-                <input type="file" name="photoFile" accept="image/*" class="form-control-file" />
-                <small class="form-text text-muted">Leave empty to keep existing photo.</small>
+
+                    <div class="mb-3">
+                        <label asp-for="DateOfBirth" class="form-label"></label>
+                        <input asp-for="DateOfBirth" class="form-control" type="date" />
+                        <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DateOfDeath" class="form-label"></label>
+                        <input asp-for="DateOfDeath" class="form-control" type="date" />
+                        <span asp-validation-for="DateOfDeath" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Biography" class="form-label"></label>
+                        <textarea asp-for="Biography" class="form-control" rows="5"></textarea>
+                        <span asp-validation-for="Biography" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Photo</label>
+                        @if (!string.IsNullOrWhiteSpace(Model.PhotoPath))
+                        {
+                            <div class="mb-2">
+                                <img class="img-fluid rounded shadow-sm object-fit-contain" style="max-height:180px;" src="@Url.Content("~" + "/" + Model.PhotoPath.TrimStart('/'))" alt="Current photo" />
+                            </div>
+                        }
+                        <input type="file" name="photoFile" accept="image/*" class="form-control" />
+                        <div class="form-text">Leave empty to keep existing photo.</div>
+                    </div>
+
+                    <div>
+                        <input type="submit" value="Save" class="btn btn-brand" />
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <label asp-for="CreatedBy" class="control-label"></label>
-                <input asp-for="CreatedBy" class="form-control" />
-                <span asp-validation-for="CreatedBy" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CreatedDate" class="control-label"></label>
-                <input asp-for="CreatedDate" class="form-control" />
-                <span asp-validation-for="CreatedDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ModifiedDate" class="control-label"></label>
-                <input asp-for="ModifiedDate" class="form-control" />
-                <span asp-validation-for="ModifiedDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<div class="text-center mb-5">
+    <a asp-action="Index" class="btn btn-outline-brand">Back to List</a>
 </div>
 
 @section Scripts {
