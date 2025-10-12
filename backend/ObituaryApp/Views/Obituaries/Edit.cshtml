@@ -51,6 +51,22 @@
                         <div class="form-text">Leave empty to keep existing photo.</div>
                     </div>
 
+                    <!-- Metadata (read-only) -->
+                    <div class="mb-2">
+                        <div class="detail-label">Created By</div>
+                        <div>@Model.CreatedByDisplayName</div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Created Date</label>
+                            <input class="form-control" value="@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm")" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Modified Date</label>
+                            <input class="form-control" value="@Model.ModifiedDate.ToString("yyyy-MM-dd HH:mm")" disabled />
+                        </div>
+                    </div>
+
                     <div>
                         <input type="submit" value="Save" class="btn btn-brand" />
                     </div>
