@@ -95,9 +95,21 @@ namespace ObituaryApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("FullName,DateOfBirth,DateOfDeath,Biography,SubmittedByName")] Obituary obituary, IFormFile? photoFile)
         {
+            var today = DateTime.UtcNow.Date;
+
             if (obituary.DateOfDeath < obituary.DateOfBirth)
             {
                 ModelState.AddModelError(nameof(obituary.DateOfDeath), "Date of death cannot be before date of birth.");
+            }
+
+            if (obituary.DateOfBirth.Date > today)
+            {
+                ModelState.AddModelError(nameof(obituary.DateOfBirth), "Date of birth cannot be in the future.");
+            }
+
+            if (obituary.DateOfDeath.Date > today)
+            {
+                ModelState.AddModelError(nameof(obituary.DateOfDeath), "Date of death cannot be in the future.");
             }
 
             // If user is not authenticated, require SubmittedByName
@@ -199,9 +211,21 @@ namespace ObituaryApp.Controllers
 
             if (!CanModify(existing)) return Forbid();
 
+            var today = DateTime.UtcNow.Date;
+
             if (obituary.DateOfDeath < obituary.DateOfBirth)
             {
                 ModelState.AddModelError(nameof(obituary.DateOfDeath), "Date of death cannot be before date of birth.");
+            }
+
+            if (obituary.DateOfBirth.Date > today)
+            {
+                ModelState.AddModelError(nameof(obituary.DateOfBirth), "Date of birth cannot be in the future.");
+            }
+
+            if (obituary.DateOfDeath.Date > today)
+            {
+                ModelState.AddModelError(nameof(obituary.DateOfDeath), "Date of death cannot be in the future.");
             }
 
             if (!ModelState.IsValid) return View(obituary);

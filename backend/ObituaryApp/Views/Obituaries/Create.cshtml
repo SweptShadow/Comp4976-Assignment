@@ -23,13 +23,13 @@
 
             <div class="mb-3">
                 <label asp-for="DateOfBirth" class="form-label"></label>
-                <input asp-for="DateOfBirth" class="form-control" type="date" />
+                <input asp-for="DateOfBirth" class="form-control" type="date" max="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="DateOfBirth" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="DateOfDeath" class="form-label"></label>
-                <input asp-for="DateOfDeath" class="form-control" type="date" />
+                <input asp-for="DateOfDeath" class="form-control" type="date" max="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="DateOfDeath" class="text-danger"></span>
             </div>
 
