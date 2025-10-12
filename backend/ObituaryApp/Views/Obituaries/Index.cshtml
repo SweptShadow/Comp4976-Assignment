@@ -34,18 +34,18 @@
             <div class="card h-100 shadow-sm obituary-card">
                 @if (!string.IsNullOrWhiteSpace(item.PhotoPath))
                 {
-                    <img class="card-img-top object-fit-contain" style="height: 220px;" src="@Url.Content("~" + "/" + item.PhotoPath.TrimStart('/'))" alt="@item.FullName" />
+                    <img class="card-img-top object-fit-contain mx-auto d-block" style="height: 220px;" src="@Url.Content("~" + "/" + item.PhotoPath.TrimStart('/'))" alt="@item.FullName" />
                 }
                 else
                 {
-                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-secondary" style="height: 220px; font-size: 2.25rem;">
+                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-secondary mx-auto" style="height: 220px; font-size: 2.25rem;">
                         @initials
                     </div>
                 }
                 <div class="card-body d-flex flex-column text-center">
                     <h5 class="card-title mb-1 obituary-name">@item.FullName</h5>
                     <div class="text-muted mb-2">@item.DateOfBirth.ToString("yyyy-MM-dd") – @item.DateOfDeath.ToString("yyyy-MM-dd")</div>
-                    <p class="card-text flex-grow-1">@(string.IsNullOrWhiteSpace(item.Biography) ? "" : (item.Biography.Length > 140 ? item.Biography.Substring(0, 140) + "..." : item.Biography))</p>
+                    <p class="card-text flex-grow-1 mx-auto">@(string.IsNullOrWhiteSpace(item.Biography) ? "" : (item.Biography.Length > 140 ? item.Biography.Substring(0, 140) + "..." : item.Biography))</p>
                     <div class="d-flex gap-2 justify-content-center">
                         <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Details</a>
                         @if (User.Identity.IsAuthenticated && (User.IsInRole("admin") || item.CreatedBy == User.GetUserId()))
