@@ -79,8 +79,16 @@ h1, h2, h3 {
 .btn-outline-brand {
   color: #212529;
   border-color: #212529;
+  background-color: #fff;
 }
-.btn-outline-brand:hover { color: #fff; background-color: #212529; border-color: #212529; }
+/* Keep outline look on hover/focus/active: white bg + dark border/text */
+.btn-outline-brand:hover,
+.btn-outline-brand:focus,
+.btn-outline-brand:active {
+  color: #212529;
+  background-color: #fff;
+  border-color: #212529;
+}
 
 /* Elegant name styling for people */
 .obituary-name {
