@@ -85,9 +85,9 @@ h1, h2, h3 {
 .btn-outline-brand:hover,
 .btn-outline-brand:focus,
 .btn-outline-brand:active {
-  color: #212529;
-  background-color: #fff;
-  border-color: #212529;
+  color: #fff;
+  background-color: #6c757d; /* bootstrap secondary gray */
+  border-color: #6c757d;
 }
 
 /* Elegant name styling for people */
