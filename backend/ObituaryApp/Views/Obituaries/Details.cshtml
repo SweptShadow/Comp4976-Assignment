@@ -4,77 +4,55 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<div class="row g-4">
+    <div class="col-12 col-md-4">
+        @if (!string.IsNullOrWhiteSpace(Model.PhotoPath))
+        {
+            <img class="img-fluid rounded shadow-sm object-fit-contain" style="width:100%;max-height:380px;" src="@Url.Content("~" + "/" + Model.PhotoPath.TrimStart('/'))" alt="@Model.FullName" />
+        }
+        else
+        {
+            var name = Model.FullName ?? "";
+            var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var initials = parts.Length > 0 ? string.Concat(parts.Take(2).Select(p => p[0])).ToUpperInvariant() : "";
+            <div class="d-flex align-items-center justify-content-center bg-light text-secondary rounded" style="height: 240px; font-size: 3rem;">
+                @initials
+            </div>
+        }
+    </div>
+    <div class="col-12 col-md-8">
+        <div class="mb-2">
+            <div class="detail-label">Name</div>
+            <h1 class="mb-1 obituary-name">@Model.FullName</h1>
+        </div>
 
-<div>
-    <h4>Obituary</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.FullName)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.FullName)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DateOfBirth)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DateOfBirth)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DateOfDeath)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DateOfDeath)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Biography)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Biography)
-        </dd>
-        <dt class="col-sm-2">
-            Photo
-        </dt>
-        <dd class="col-sm-10">
-            @if (!string.IsNullOrWhiteSpace(Model.PhotoPath))
+        <div class="row g-4 mb-3">
+            <div class="col-auto">
+                <div class="detail-label">Date of Birth</div>
+                <div>@Model.DateOfBirth.ToString("yyyy-MM-dd")</div>
+            </div>
+            <div class="col-auto">
+                <div class="detail-label">Date of Death</div>
+                <div>@Model.DateOfDeath.ToString("yyyy-MM-dd")</div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <div class="detail-label">Biography</div>
+            <p class="lead mb-0">@Model.Biography</p>
+        </div>
+
+        <div class="mt-4">
+            <div class="detail-label">@((!string.IsNullOrEmpty(Model.SubmittedByName)) ? "Submitted By" : "Created By")</div>
+            <div>@Model.CreatedByDisplayName</div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            @if (User.Identity.IsAuthenticated && (User.IsInRole("admin") || Model.CreatedBy == User.GetUserId()))
             {
-                <img src="@Url.Content("~/" + Model.PhotoPath)" alt="Photo" style="max-width:300px;max-height:300px;" />
+                <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">Edit</a>
             }
-            else
-            {
-                <span>No photo provided.</span>
-            }
-        </dd>
-        <dt class="col-sm-2">
-            @if (!string.IsNullOrEmpty(Model.SubmittedByName))
-            {
-                <text>Submitted By</text>
-            }
-            else
-            {
-                <text>Created By</text>
-            }
-        </dt>
-        <dd class="col-sm-10">
-            @Model.CreatedByDisplayName
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ModifiedDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ModifiedDate)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+            <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+        </div>
+    </div>
 </div>
