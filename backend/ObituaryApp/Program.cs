@@ -123,23 +123,25 @@ app.MapControllerRoute(
 // To enable routing for Razor Pages (including Identity area pages), uncomment the next line:
 app.MapRazorPages();
 
-// Apply migrations automatically and seed database
+// Initialize database and seed data
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
     try
     {
-        // Try to apply migrations
-        context.Database.Migrate();
-    }
-    catch
-    {
-        // If migrations fail, ensure database is created (fallback for SQLite)
-        context.Database.EnsureCreated();
-    }
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-    await SeedData.Initialize(scope.ServiceProvider);
+        // For SQLite, use EnsureCreated which is more reliable than Migrate
+        context.Database.EnsureCreated();
+
+        // Seed data
+        await SeedData.Initialize(scope.ServiceProvider);
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while initializing the database.");
+        // Continue startup even if seeding fails
+    }
 }
 
 app.Run();

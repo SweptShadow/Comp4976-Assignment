@@ -11,9 +11,6 @@ namespace ObituaryApp.Data
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-            // Ensure database is created
-            context.Database.EnsureCreated();
-
             // Create roles
             if (!await roleManager.RoleExistsAsync("admin"))
             {
