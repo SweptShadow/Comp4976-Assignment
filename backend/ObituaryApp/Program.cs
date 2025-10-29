@@ -127,7 +127,18 @@ app.MapRazorPages();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    context.Database.Migrate();  // Apply pending migrations automatically
+
+    try
+    {
+        // Try to apply migrations
+        context.Database.Migrate();
+    }
+    catch
+    {
+        // If migrations fail, ensure database is created (fallback for SQLite)
+        context.Database.EnsureCreated();
+    }
+
     await SeedData.Initialize(scope.ServiceProvider);
 }
 
