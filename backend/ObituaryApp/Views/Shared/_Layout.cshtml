@@ -9,7 +9,9 @@
     <!-- Web fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@400;500;600&family=Great+Vibes&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ObituaryApp.styles.css" asp-append-version="true" />
@@ -25,7 +27,7 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    
+
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
@@ -34,16 +36,11 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Obituaries" asp-action="Index">Obituaries</a>
                         </li>
-                        
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home"
-                                asp-action="Privacy">Privacy</a>
-                        </li>
                     </ul>
-                    
+
                     <!-- Dynamic Identity links: Register, Login, Logout, User Info -->
                     <ul class="navbar-nav">
-                        @if (!User.Identity.IsAuthenticated)
+                        @if (User.Identity?.IsAuthenticated != true)
                         {
                             <li class="nav-item">
                                 <a class="nav-link" href="/Identity/Account/Register">Register</a>
@@ -55,7 +52,8 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="btn btn-sm btn-outline-light me-2" asp-controller="Obituaries" asp-action="Create">Create Obituary</a>
+                                <a class="btn btn-sm btn-outline-light me-2" asp-controller="Obituaries"
+                                    asp-action="Create">Create Obituary</a>
                             </li>
                             <li class="nav-item">
                                 <span class="nav-link">

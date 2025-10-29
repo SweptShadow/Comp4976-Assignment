@@ -13,51 +13,43 @@
 
                 <form asp-action="Create" enctype="multipart/form-data" class="needs-validation" novalidate>
 
-            <div asp-validation-summary="All" class="text-danger"></div>
+                    <div asp-validation-summary="All" class="text-danger"></div>
 
-            <div class="mb-3">
-                <label asp-for="FullName" class="form-label"></label>
-                <input asp-for="FullName" class="form-control" />
-                <span asp-validation-for="FullName" class="text-danger"></span>
-            </div>
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="DateOfBirth" class="form-label"></label>
-                <input asp-for="DateOfBirth" class="form-control" type="date" max="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
-                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
-            </div>
+                    <div class="mb-3">
+                        <label asp-for="DateOfBirth" class="form-label"></label>
+                        <input asp-for="DateOfBirth" class="form-control" type="date"
+                            max="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="DateOfDeath" class="form-label"></label>
-                <input asp-for="DateOfDeath" class="form-control" type="date" max="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
-                <span asp-validation-for="DateOfDeath" class="text-danger"></span>
-            </div>
+                    <div class="mb-3">
+                        <label asp-for="DateOfDeath" class="form-label"></label>
+                        <input asp-for="DateOfDeath" class="form-control" type="date"
+                            max="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="DateOfDeath" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="Biography" class="form-label"></label>
-                <textarea asp-for="Biography" class="form-control" rows="5"></textarea>
-                <span asp-validation-for="Biography" class="text-danger"></span>
-            </div>
+                    <div class="mb-3">
+                        <label asp-for="Biography" class="form-label"></label>
+                        <textarea asp-for="Biography" class="form-control" rows="5"></textarea>
+                        <span asp-validation-for="Biography" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label class="form-label">Photo</label>
-                <input type="file" name="photoFile" accept="image/*" class="form-control" />
-                <div class="form-text">Optional. Upload a JPG/PNG image.</div>
-            </div>
+                    <div class="mb-3">
+                        <label class="form-label">Photo</label>
+                        <input type="file" name="photoFile" accept="image/*" class="form-control" />
+                        <div class="form-text">Optional. Upload a JPG/PNG image.</div>
+                    </div>
 
-            @if (User.Identity?.IsAuthenticated != true)
-            {
-                <div class="mb-3">
-                    <label asp-for="SubmittedByName" class="form-label">Submitted By (Required)</label>
-                    <input asp-for="SubmittedByName" class="form-control" required />
-                    <span asp-validation-for="SubmittedByName" class="text-danger"></span>
-                    <div class="form-text">Please provide your name for this submission.</div>
-                </div>
-            }
-
-            <div>
-                <input type="submit" value="Create" class="btn btn-brand" />
-            </div>
+                    <div>
+                        <input type="submit" value="Create" class="btn btn-brand" />
+                    </div>
 
                 </form>
             </div>

@@ -48,7 +48,7 @@
         </div>
 
         <div class="mt-4 d-flex gap-2">
-            @if (User.Identity.IsAuthenticated && (User.IsInRole("admin") || Model.CreatedBy == User.GetUserId()))
+            @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("admin") || Model.CreatedBy == User.GetUserId()))
             {
                 <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">Edit</a>
             }

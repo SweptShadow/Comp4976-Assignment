@@ -16,10 +16,10 @@ namespace ObituaryApp.Controllers
 {
     public class ObituariesController : Controller
     {
-    private readonly ApplicationDbContext _context;
-    private readonly ObituaryApp.Services.IBlobService _blobService;
-    private readonly Microsoft.Extensions.Logging.ILogger<ObituariesController> _logger;
-    private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _env;
+        private readonly ApplicationDbContext _context;
+        private readonly ObituaryApp.Services.IBlobService _blobService;
+        private readonly Microsoft.Extensions.Logging.ILogger<ObituariesController> _logger;
+        private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _env;
 
         public ObituariesController(ApplicationDbContext context, ObituaryApp.Services.IBlobService blobService, Microsoft.Extensions.Logging.ILogger<ObituariesController> logger, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
         {
@@ -40,7 +40,7 @@ namespace ObituaryApp.Controllers
             var query = _context.Obituaries.Include(o => o.CreatedByUser).AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(o => o.FullName.Contains(search));
+                query = query.Where(o => EF.Functions.Like(o.FullName, $"%{search}%"));
 
             var total = await query.CountAsync();
             var items = await query
@@ -78,6 +78,7 @@ namespace ObituaryApp.Controllers
         }
 
         // GET: Obituaries/Create
+        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -88,12 +89,13 @@ namespace ObituaryApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         /**
          * Creates a new obituary.
-         * Authenticated users: Sets CreatedBy automatically from logged-in user.
-         * Non-authenticated users: Must provide SubmittedByName.
+         * Only authenticated users can create obituaries.
+         * CreatedBy is automatically set from the logged-in user.
          */
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FullName,DateOfBirth,DateOfDeath,Biography,SubmittedByName")] Obituary obituary, IFormFile? photoFile)
+        [Authorize]
+        public async Task<IActionResult> Create([Bind("FullName,DateOfBirth,DateOfDeath,Biography")] Obituary obituary, IFormFile? photoFile)
         {
             var today = DateTime.UtcNow.Date;
 
@@ -112,21 +114,12 @@ namespace ObituaryApp.Controllers
                 ModelState.AddModelError(nameof(obituary.DateOfDeath), "Date of death cannot be in the future.");
             }
 
-            // If user is not authenticated, require SubmittedByName
-            if (User.Identity?.IsAuthenticated != true && string.IsNullOrWhiteSpace(obituary.SubmittedByName))
-            {
-                ModelState.AddModelError(nameof(obituary.SubmittedByName), "Submitted By name is required for anonymous submissions.");
-            }
-
             if (!ModelState.IsValid) return View(obituary);
 
-            // Set CreatedBy for authenticated users
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                var userId = User.GetUserId();
-                if (userId == null) return Forbid();
-                obituary.CreatedBy = userId;
-            }
+            // Set CreatedBy automatically from authenticated user
+            var userId = User.GetUserId();
+            if (userId == null) return Forbid();
+            obituary.CreatedBy = userId;
 
             obituary.CreatedDate = DateTime.UtcNow;
             obituary.ModifiedDate = DateTime.UtcNow;

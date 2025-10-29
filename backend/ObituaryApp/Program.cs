@@ -123,10 +123,12 @@ app.MapControllerRoute(
 // To enable routing for Razor Pages (including Identity area pages), uncomment the next line:
 app.MapRazorPages();
 
-// Seed database (will be created in Step 6)
+// Apply migrations automatically and seed database
 using (var scope = app.Services.CreateScope())
 {
-    await SeedData.Initialize(scope.ServiceProvider);  // ← Uncomment when SeedData is created
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.Migrate();  // Apply pending migrations automatically
+    await SeedData.Initialize(scope.ServiceProvider);
 }
 
 app.Run();

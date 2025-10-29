@@ -7,7 +7,7 @@
     <p>This application allows you to create, view, and manage obituary entries.</p>
     <p class="d-flex justify-content-center gap-3">
         <a class="btn btn-brand" asp-controller="Obituaries" asp-action="Index">View Obituaries</a>
-        @if (User.Identity.IsAuthenticated)
+        @if (User.Identity?.IsAuthenticated == true)
         {
             <a class="btn btn-outline-brand" asp-controller="Obituaries" asp-action="Create">Create Obituary</a>
         }

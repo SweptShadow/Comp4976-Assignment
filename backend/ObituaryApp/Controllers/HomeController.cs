@@ -15,12 +15,8 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        return View();
-    }
-
-    public IActionResult Privacy()
-    {
-        return View();
+        // Redirect to Obituaries index as the main page
+        return RedirectToAction("Index", "Obituaries");
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
