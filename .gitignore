@@ -17,7 +17,10 @@
 
 # SQLite local artifact
 *.db
-
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
 
 # IDE
 .vs/
