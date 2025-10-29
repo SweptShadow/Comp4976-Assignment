@@ -1,0 +1,340 @@
+@page "/obituaries"
+@using frontend.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Obituaries</PageTitle>
+
+<h1>Obituaries</h1>
+<p>Browse, search, and remember.</p>
+
+<!-- Search and Create Button -->
+<div class="row mb-3">
+    <div class="col-md-8">
+        <input type="text" class="form-control" placeholder="Search by name" @bind="searchTerm" @bind:event="oninput" />
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary" @onclick="SearchObituraries">Search</button>
+        <button class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-success" @onclick="ShowCreateForm">+ Create New</button>
+    </div>
+</div>
+
+<!-- Create/Edit Form -->
+@if (showForm)
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>@(editingObituary?.Id > 0 ? "Edit Obituary" : "Create New Obituary")</h3>
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="mb-3">
+                    <label for="fullName" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="fullName" @bind="editingObituary.FullName" required />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="dateOfBirth" @bind="editingObituary.DateOfBirth"
+                            required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="dateOfDeath" class="form-label">Date of Death</label>
+                        <input type="date" class="form-control" id="dateOfDeath" @bind="editingObituary.DateOfDeath"
+                            required />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="biography" class="form-label">Biography</label>
+                    <textarea class="form-control" id="biography" rows="5" @bind="editingObituary.Biography"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="photoPath" class="form-label">Photo URL</label>
+                    <input type="text" class="form-control" id="photoPath" @bind="editingObituary.PhotoPath" />
+                    <small class="form-text text-muted">Enter a URL to an image.</small>
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">@errorMessage</div>
+                }
+
+                @if (!string.IsNullOrEmpty(successMessage))
+                {
+                    <div class="alert alert-success">@successMessage</div>
+                }
+
+                <div class="mb-3">
+                    <button type="button" class="btn btn-primary" @onclick="SaveObituary" disabled="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span>Saving...</span>
+                        }
+                        else
+                        {
+                            <span>Save</span>
+                        }
+                    </button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (obituaries == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (obituaries.Count == 0)
+{
+    <p>No obituaries found.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var obituary in obituaries)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    @if (!string.IsNullOrWhiteSpace(obituary.PhotoPath))
+                    {
+                        <img src="@obituary.PhotoPath" class="card-img-top" alt="@obituary.FullName" />
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@obituary.FullName</h5>
+                        <p class="card-text">
+                            <small>@obituary.DateOfBirth.ToString("yyyy-MM-dd") –
+                                @obituary.DateOfDeath.ToString("yyyy-MM-dd")</small>
+                        </p>
+                        <p class="card-text">
+                            @if (!string.IsNullOrWhiteSpace(obituary.Biography))
+                            {
+                                @(obituary.Biography.Length > 100 ? obituary.Biography.Substring(0, 100) + "..." :
+                                                    obituary.Biography)
+                            }
+                        </p>
+                        <div>
+                            <a href="/obituaries/@obituary.Id" class="btn btn-primary btn-sm">Details</a>
+                            <button class="btn btn-warning btn-sm" @onclick="() => ShowEditForm(obituary)">Edit</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteObituary(obituary.Id)">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <span>Page @currentPage of @totalPages (Total: @totalCount obituaries)</span>
+        <div>
+            @if (currentPage > 1)
+            {
+                <button class="btn btn-outline-secondary btn-sm" @onclick="PreviousPage">Previous</button>
+            }
+            @if (currentPage < totalPages)
+            {
+                <button class="btn btn-outline-secondary btn-sm" @onclick="NextPage">Next</button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private List<Obituary>? obituaries;
+    private string searchTerm = "";
+    private int currentPage = 1;
+    private int pageSize = 6;
+    private int totalPages = 1;
+    private int totalCount = 0;
+
+    private bool showForm = false;
+    private Obituary editingObituary = new Obituary
+    {
+        DateOfBirth = DateTime.Today.AddYears(-80),
+        DateOfDeath = DateTime.Today
+    };
+    private string errorMessage = "";
+    private string successMessage = "";
+    private bool isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadObituraries();
+    }
+
+    private async Task LoadObituraries()
+    {
+        try
+        {
+            // Build query string with pagination and search
+            var query = $"api/ObituariesApi?page={currentPage}&pageSize={pageSize}";
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query += $"&searchTerm={Uri.EscapeDataString(searchTerm)}";
+            }
+
+            // Call the backend API to get obituaries
+            var response = await Http.GetFromJsonAsync<ObituaryListResponse>(query);
+            obituaries = response?.Items ?? new List<Obituary>();
+            totalCount = response?.Total ?? 0;
+            totalPages = totalCount > 0 ? (int)Math.Ceiling((double)totalCount / pageSize) : 1;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading obituaries: {ex.Message}");
+            obituaries = new List<Obituary>();
+        }
+    }
+
+    private async Task SearchObituraries()
+    {
+        currentPage = 1; // Reset to first page when searching
+        await LoadObituraries();
+    }
+
+    private async Task ClearSearch()
+    {
+        searchTerm = "";
+        currentPage = 1;
+        await LoadObituraries();
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadObituraries();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadObituraries();
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        editingObituary = new Obituary
+        {
+            DateOfBirth = DateTime.Today.AddYears(-80),
+            DateOfDeath = DateTime.Today
+        };
+        showForm = true;
+        errorMessage = "";
+        successMessage = "";
+    }
+
+    private void ShowEditForm(Obituary obituary)
+    {
+        editingObituary = new Obituary
+        {
+            Id = obituary.Id,
+            FullName = obituary.FullName,
+            DateOfBirth = obituary.DateOfBirth,
+            DateOfDeath = obituary.DateOfDeath,
+            Biography = obituary.Biography,
+            PhotoPath = obituary.PhotoPath
+        };
+        showForm = true;
+        errorMessage = "";
+        successMessage = "";
+    }
+
+    private void CancelForm()
+    {
+        showForm = false;
+        editingObituary = new Obituary();
+        errorMessage = "";
+        successMessage = "";
+    }
+
+    private async Task SaveObituary()
+    {
+        errorMessage = "";
+        successMessage = "";
+        isSubmitting = true;
+
+        try
+        {
+            HttpResponseMessage response;
+
+            if (editingObituary.Id > 0)
+            {
+                // Update existing obituary
+                response = await Http.PutAsJsonAsync($"api/ObituariesApi/{editingObituary.Id}", editingObituary);
+            }
+            else
+            {
+                // Create new obituary
+                response = await Http.PostAsJsonAsync("api/ObituariesApi", editingObituary);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = editingObituary.Id > 0 ? "Obituary updated successfully!" : "Obituary created successfully!";
+                await Task.Delay(1000); // Show success message briefly
+                showForm = false;
+                await LoadObituraries(); // Reload the list
+            }
+            else
+            {
+                errorMessage = $"Error saving obituary: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task DeleteObituary(int id)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this obituary?");
+        if (confirmed)
+        {
+            try
+            {
+                var response = await Http.DeleteAsync($"api/ObituariesApi/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadObituraries(); // Reload the list
+                }
+                else
+                {
+                    Console.WriteLine($"Error deleting obituary: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting obituary: {ex.Message}");
+            }
+        }
+    }
+
+    // Response wrapper to match backend API response
+    public class ObituaryListResponse
+    {
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int Total { get; set; }
+        public List<Obituary> Items { get; set; } = new();
+    }
+}

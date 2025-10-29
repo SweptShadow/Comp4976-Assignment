@@ -1,0 +1,69 @@
+@page "/obituaries/{id:int}"
+@using frontend.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>@(obituary?.FullName ?? "Obituary Details")</PageTitle>
+
+@if (obituary == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container">
+        <h1>@obituary.FullName</h1>
+
+        @if (!string.IsNullOrWhiteSpace(obituary.PhotoPath))
+        {
+            <div class="mb-3">
+                <img src="@obituary.PhotoPath" alt="@obituary.FullName" style="max-width: 400px;" class="img-fluid" />
+            </div>
+        }
+
+        <div class="mb-3">
+            <strong>Date of Birth:</strong> @obituary.DateOfBirth.ToString("MMMM dd, yyyy")
+        </div>
+
+        <div class="mb-3">
+            <strong>Date of Death:</strong> @obituary.DateOfDeath.ToString("MMMM dd, yyyy")
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(obituary.Biography))
+        {
+            <div class="mb-3">
+                <strong>Biography:</strong>
+                <p>@obituary.Biography</p>
+            </div>
+        }
+
+        <div class="mt-4">
+            <button class="btn btn-secondary" @onclick="GoBack">Back to List</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Obituary? obituary;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Call backend API to get single obituary
+            obituary = await Http.GetFromJsonAsync<Obituary>($"api/ObituariesApi/{Id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading obituary: {ex.Message}");
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/obituaries");
+    }
+}

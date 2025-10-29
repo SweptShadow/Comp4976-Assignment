@@ -10,6 +10,17 @@ using ObituaryApp.Services; // ← Uncomment when JwtService is created
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add CORS for Blazor frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazor", policy =>
+    {
+        policy.WithOrigins("http://localhost:5000", "http://localhost:5001", "https://localhost:5001")
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // Add services to the container.
 builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson();
@@ -113,6 +124,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Enable CORS before authentication
+app.UseCors("AllowBlazor");
 
 app.UseAuthentication();
 app.UseAuthorization();
