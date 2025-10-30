@@ -3,6 +3,7 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>Obituaries</PageTitle>
 
@@ -19,7 +20,14 @@
         <button class="btn btn-secondary" @onclick="ClearSearch">Clear</button>
     </div>
     <div class="col-md-2">
-        <button class="btn btn-success" @onclick="ShowCreateForm">+ Create New</button>
+        <AuthorizeView>
+            <Authorized>
+                <button class="btn btn-success" @onclick="ShowCreateForm">+ Create New</button>
+            </Authorized>
+            <NotAuthorized>
+                <a class="btn btn-outline-primary" href="/login">Sign in to create</a>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </div>
 
@@ -123,8 +131,12 @@ else
                         </p>
                         <div>
                             <a href="/obituaries/@obituary.Id" class="btn btn-primary btn-sm">Details</a>
-                            <button class="btn btn-warning btn-sm" @onclick="() => ShowEditForm(obituary)">Edit</button>
-                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteObituary(obituary.Id)">Delete</button>
+                            <AuthorizeView>
+                                <Authorized>
+                                    <button class="btn btn-warning btn-sm" @onclick="() => ShowEditForm(obituary)">Edit</button>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => DeleteObituary(obituary.Id)">Delete</button>
+                                </Authorized>
+                            </AuthorizeView>
                         </div>
                     </div>
                 </div>
@@ -179,7 +191,7 @@ else
             var query = $"api/ObituariesApi?page={currentPage}&pageSize={pageSize}";
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query += $"&searchTerm={Uri.EscapeDataString(searchTerm)}";
+                query += $"&search={Uri.EscapeDataString(searchTerm)}";
             }
 
             // Call the backend API to get obituaries
@@ -290,10 +302,17 @@ else
                 showForm = false;
                 await LoadObituraries(); // Reload the list
             }
-            else
-            {
-                errorMessage = $"Error saving obituary: {response.StatusCode}";
-            }
+                else
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    {
+                        errorMessage = "You must be signed in to perform this action.";
+                    }
+                    else
+                    {
+                        errorMessage = $"Error saving obituary: {response.StatusCode}";
+                    }
+                }
         }
         catch (Exception ex)
         {
@@ -319,7 +338,14 @@ else
                 }
                 else
                 {
-                    Console.WriteLine($"Error deleting obituary: {response.StatusCode}");
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    {
+                        await JSRuntime.InvokeVoidAsync("alert", "You must be signed in to delete.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error deleting obituary: {response.StatusCode}");
+                    }
                 }
             }
             catch (Exception ex)

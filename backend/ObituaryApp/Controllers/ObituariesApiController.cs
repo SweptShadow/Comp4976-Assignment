@@ -36,7 +36,7 @@ namespace ObituaryApp.Controllers
             var query = _context.Obituaries.AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(o => o.FullName.Contains(search));
+                query = query.Where(o => EF.Functions.Like(o.FullName, $"%{search}%"));
 
             var total = await query.CountAsync();
             var items = await query
