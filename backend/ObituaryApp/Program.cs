@@ -106,6 +106,8 @@ builder.Services.AddSwaggerGen(c =>
 // Add custom services (will be created in Step 5)
 builder.Services.AddScoped<IJwtService, JwtService>();  // ← Uncomment when JwtService is created
 
+builder.AddServiceDefaults();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

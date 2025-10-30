@@ -28,5 +28,8 @@
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.22.0" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Comp4976-Assignment.ServiceDefaults\Comp4976-Assignment.ServiceDefaults.csproj" />
+  </ItemGroup>
 
 </Project>
