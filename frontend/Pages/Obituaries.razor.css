@@ -1,0 +1,11 @@
+/* Keep images tidy and consistent */
+.card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Subtle spacing on form preview image */
+img.img-thumbnail {
+    background-color: #fff;
+}
+

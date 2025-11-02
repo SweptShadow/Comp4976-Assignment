@@ -1,4 +1,4 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Obituary App</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -17,7 +17,6 @@
         <div class="nav-item px-3">
             <AuthorizeView>
                 <Authorized>
-                    <NavLink class="nav-link" href="obituaries/new">Create New</NavLink>
                     <a class="nav-link" href="javascript:void(0)" @onclick="Logout">Logout</a>
                 </Authorized>
                 <NotAuthorized>
@@ -47,3 +46,4 @@
         Navigation.NavigateTo("/obituaries", forceLoad: true);
     }
 }
+

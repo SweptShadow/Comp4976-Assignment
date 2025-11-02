@@ -1,0 +1,156 @@
+@page "/obituaries/edit/{Id:int}"
+@using frontend.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Obituary</PageTitle>
+
+<AuthorizeView>
+    <Authorized Context="auth">
+        @if (loading)
+        {
+            <div class="d-flex align-items-center my-4">
+                <div class="spinner-border me-2" role="status" aria-hidden="true"></div>
+                <span>Loading obituary...</span>
+            </div>
+        }
+        else if (errorMessage != null && errorMessage.Length > 0)
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+        else if (editingObituary != null)
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Edit Obituary</h3>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="editingObituary" OnValidSubmit="SaveAsync" Context="editCtx">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label for="fullName" class="form-label">Full Name</label>
+                            <InputText id="fullName" class="form-control" @bind-Value="editingObituary.FullName" />
+                            <ValidationMessage For="() => editingObituary.FullName" />
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                                <InputDate id="dateOfBirth" class="form-control" @bind-Value="editingObituary.DateOfBirth" />
+                                <ValidationMessage For="() => editingObituary.DateOfBirth" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="dateOfDeath" class="form-label">Date of Death</label>
+                                <InputDate id="dateOfDeath" class="form-control" @bind-Value="editingObituary.DateOfDeath" />
+                                <ValidationMessage For="() => editingObituary.DateOfDeath" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="biography" class="form-label">Biography</label>
+                            <InputTextArea id="biography" class="form-control" rows="5" @bind-Value="editingObituary.Biography" />
+                            <ValidationMessage For="() => editingObituary.Biography" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="photoPath" class="form-label">Photo URL</label>
+                            <InputText id="photoPath" class="form-control" @bind-Value="editingObituary.PhotoPath" />
+                            <small class="form-text text-muted">Enter a relative (e.g. /images/...) or absolute URL.</small>
+                            @if (!string.IsNullOrWhiteSpace(editingObituary.PhotoPath))
+                            {
+                                <div class="mt-2">
+                                    <img src="@editingObituary.PhotoPath" alt="Photo preview" class="img-thumbnail" style="max-width: 240px;" />
+                                </div>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger">@errorMessage</div>
+                        }
+
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">@(isSubmitting ? "Saving..." : "Save")</button>
+                            <button type="button" class="btn btn-secondary" @onclick="GoBack" disabled="@isSubmitting">Cancel</button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <div class="alert alert-warning">Please sign in to edit an obituary.</div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Obituary? editingObituary;
+    private string errorMessage = string.Empty;
+    private bool isSubmitting;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            editingObituary = await Http.GetFromJsonAsync<Obituary>($"api/ObituariesApi/{Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        errorMessage = string.Empty;
+        if (editingObituary is null)
+        {
+            errorMessage = "Obituary not loaded.";
+            return;
+        }
+
+        if (editingObituary.DateOfDeath < editingObituary.DateOfBirth)
+        {
+            errorMessage = "Date of death cannot be before date of birth.";
+            return;
+        }
+
+        isSubmitting = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/ObituariesApi/{editingObituary.Id}", editingObituary);
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/obituaries", forceLoad: true);
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                errorMessage = "You must be signed in and authorized to edit this obituary.";
+            }
+            else
+            {
+                errorMessage = $"Error saving obituary: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/obituaries");
+}

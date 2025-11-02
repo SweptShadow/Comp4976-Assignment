@@ -22,7 +22,7 @@
     <div class="col-md-2">
         <AuthorizeView>
             <Authorized>
-                <button class="btn btn-success" @onclick="ShowCreateForm">+ Create New</button>
+                <a class="btn btn-success" href="/obituaries/new">+ Create New</a>
             </Authorized>
             <NotAuthorized>
                 <a class="btn btn-outline-primary" href="/login">Sign in to create</a>
@@ -32,78 +32,28 @@
 </div>
 
 <!-- Create/Edit Form -->
-@if (showForm)
-{
-    <div class="card mb-4">
-        <div class="card-header">
-            <h3>@(editingObituary?.Id > 0 ? "Edit Obituary" : "Create New Obituary")</h3>
-        </div>
-        <div class="card-body">
-            <form>
-                <div class="mb-3">
-                    <label for="fullName" class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="fullName" @bind="editingObituary.FullName" required />
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="dateOfBirth" class="form-label">Date of Birth</label>
-                        <input type="date" class="form-control" id="dateOfBirth" @bind="editingObituary.DateOfBirth"
-                            required />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="dateOfDeath" class="form-label">Date of Death</label>
-                        <input type="date" class="form-control" id="dateOfDeath" @bind="editingObituary.DateOfDeath"
-                            required />
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="biography" class="form-label">Biography</label>
-                    <textarea class="form-control" id="biography" rows="5" @bind="editingObituary.Biography"></textarea>
-                </div>
-
-                <div class="mb-3">
-                    <label for="photoPath" class="form-label">Photo URL</label>
-                    <input type="text" class="form-control" id="photoPath" @bind="editingObituary.PhotoPath" />
-                    <small class="form-text text-muted">Enter a URL to an image.</small>
-                </div>
-
-                @if (!string.IsNullOrEmpty(errorMessage))
-                {
-                    <div class="alert alert-danger">@errorMessage</div>
-                }
-
-                @if (!string.IsNullOrEmpty(successMessage))
-                {
-                    <div class="alert alert-success">@successMessage</div>
-                }
-
-                <div class="mb-3">
-                    <button type="button" class="btn btn-primary" @onclick="SaveObituary" disabled="@isSubmitting">
-                        @if (isSubmitting)
-                        {
-                            <span>Saving...</span>
-                        }
-                        else
-                        {
-                            <span>Save</span>
-                        }
-                    </button>
-                    <button type="button" class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-}
+@* Inline create/edit form removed. Use /obituaries/new and /obituaries/edit/{id}. *@
 
 @if (obituaries == null)
 {
-    <p><em>Loading...</em></p>
+    <div class="d-flex align-items-center my-4">
+        <div class="spinner-border me-2" role="status" aria-hidden="true"></div>
+        <span>Loading obituaries...</span>
+    </div>
 }
 else if (obituaries.Count == 0)
 {
-    <p>No obituaries found.</p>
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <span>No obituaries found.</span>
+        <AuthorizeView>
+            <Authorized>
+                <a class="btn btn-sm btn-primary" href="/obituaries/new">Create one</a>
+            </Authorized>
+            <NotAuthorized>
+                <a class="btn btn-sm btn-outline-primary" href="/login">Sign in to create</a>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
 }
 else
 {
@@ -122,18 +72,17 @@ else
                             <small>@obituary.DateOfBirth.ToString("yyyy-MM-dd") –
                                 @obituary.DateOfDeath.ToString("yyyy-MM-dd")</small>
                         </p>
-                        <p class="card-text">
+                        <p class="card-text" title="@obituary.Biography">
                             @if (!string.IsNullOrWhiteSpace(obituary.Biography))
                             {
-                                @(obituary.Biography.Length > 100 ? obituary.Biography.Substring(0, 100) + "..." :
-                                                    obituary.Biography)
+                                @(obituary.Biography.Length > 100 ? obituary.Biography.Substring(0, 100) + "..." : obituary.Biography)
                             }
                         </p>
                         <div>
                             <a href="/obituaries/@obituary.Id" class="btn btn-primary btn-sm">Details</a>
                             <AuthorizeView>
                                 <Authorized>
-                                    <button class="btn btn-warning btn-sm" @onclick="() => ShowEditForm(obituary)">Edit</button>
+                                    <a class="btn btn-warning btn-sm" href="/obituaries/edit/@obituary.Id">Edit</a>
                                     <button class="btn btn-danger btn-sm" @onclick="() => DeleteObituary(obituary.Id)">Delete</button>
                                 </Authorized>
                             </AuthorizeView>
@@ -168,15 +117,7 @@ else
     private int totalPages = 1;
     private int totalCount = 0;
 
-    private bool showForm = false;
-    private Obituary editingObituary = new Obituary
-    {
-        DateOfBirth = DateTime.Today.AddYears(-80),
-        DateOfDeath = DateTime.Today
-    };
     private string errorMessage = "";
-    private string successMessage = "";
-    private bool isSubmitting = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -238,91 +179,6 @@ else
         }
     }
 
-    private void ShowCreateForm()
-    {
-        editingObituary = new Obituary
-        {
-            DateOfBirth = DateTime.Today.AddYears(-80),
-            DateOfDeath = DateTime.Today
-        };
-        showForm = true;
-        errorMessage = "";
-        successMessage = "";
-    }
-
-    private void ShowEditForm(Obituary obituary)
-    {
-        editingObituary = new Obituary
-        {
-            Id = obituary.Id,
-            FullName = obituary.FullName,
-            DateOfBirth = obituary.DateOfBirth,
-            DateOfDeath = obituary.DateOfDeath,
-            Biography = obituary.Biography,
-            PhotoPath = obituary.PhotoPath
-        };
-        showForm = true;
-        errorMessage = "";
-        successMessage = "";
-    }
-
-    private void CancelForm()
-    {
-        showForm = false;
-        editingObituary = new Obituary();
-        errorMessage = "";
-        successMessage = "";
-    }
-
-    private async Task SaveObituary()
-    {
-        errorMessage = "";
-        successMessage = "";
-        isSubmitting = true;
-
-        try
-        {
-            HttpResponseMessage response;
-
-            if (editingObituary.Id > 0)
-            {
-                // Update existing obituary
-                response = await Http.PutAsJsonAsync($"api/ObituariesApi/{editingObituary.Id}", editingObituary);
-            }
-            else
-            {
-                // Create new obituary
-                response = await Http.PostAsJsonAsync("api/ObituariesApi", editingObituary);
-            }
-
-            if (response.IsSuccessStatusCode)
-            {
-                successMessage = editingObituary.Id > 0 ? "Obituary updated successfully!" : "Obituary created successfully!";
-                await Task.Delay(1000); // Show success message briefly
-                showForm = false;
-                await LoadObituraries(); // Reload the list
-            }
-                else
-                {
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                    {
-                        errorMessage = "You must be signed in to perform this action.";
-                    }
-                    else
-                    {
-                        errorMessage = $"Error saving obituary: {response.StatusCode}";
-                    }
-                }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error: {ex.Message}";
-        }
-        finally
-        {
-            isSubmitting = false;
-        }
-    }
 
     private async Task DeleteObituary(int id)
     {
