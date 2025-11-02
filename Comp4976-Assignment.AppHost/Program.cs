@@ -6,7 +6,11 @@ var builder = DistributedApplication.CreateBuilder(args);
 var backend = builder.AddProject<Projects.ObituaryApp>("backend");
 
 // Add the frontend (Blazor WebAssembly) project
-builder.AddProject<Projects.frontend>("frontend")
-       .WithReference(backend); // frontend depends on backend
+var frontend = builder.AddProject<Projects.frontend>("frontend")
+                      .WithReference(backend); // frontend depends on backend
+
+// Pass backend URL to frontend and frontend URL to backend for CORS
+frontend.WithEnvironment("BackendUrl", backend.GetEndpoint("https"));
+backend.WithEnvironment("FrontendUrl", frontend.GetEndpoint("http"));
 
 builder.Build().Run();

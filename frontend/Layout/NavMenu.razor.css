@@ -4,7 +4,7 @@
 
 .top-row {
     min-height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
+    background-color: #111; /* black header */
 }
 
 .navbar-brand {
@@ -33,6 +33,15 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-list-nested' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M4.5 11.5A.5.5 0 0 1 5 11h10a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 1 3h10a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5z'/%3E%3C/svg%3E");
 }
 
+/* Login/Logout icons */
+.bi-box-arrow-right-nav-menu {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 16 16'%3E%3Crect x='2' y='2' width='2' height='12'/%3E%3Cpath d='M6 3l6 5-6 5V3z'/%3E%3C/svg%3E");
+}
+
+.bi-box-arrow-in-right-nav-menu {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 16 16'%3E%3Crect x='12' y='2' width='2' height='12'/%3E%3Cpath d='M10 3L4 8l6 5V3z'/%3E%3C/svg%3E");
+}
+
 .nav-item {
     font-size: 0.9rem;
     padding-bottom: 0.5rem;
@@ -47,7 +56,7 @@
     }
 
     .nav-item ::deep a {
-        color: #d7d7d7;
+        color: #eeeeee;
         border-radius: 4px;
         height: 3rem;
         display: flex;
@@ -56,13 +65,13 @@
     }
 
 .nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.37);
-    color: white;
+    background-color: #222;
+    color: #ffffff;
 }
 
 .nav-item ::deep a:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
+    background-color: #1a1a1a;
+    color: #ffffff;
 }
 
 @media (min-width: 641px) {

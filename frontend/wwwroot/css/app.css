@@ -1,28 +1,29 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #f7f7f7; /* light background */
+    color: #111; /* dark text */
 }
 
 h1:focus {
     outline: none;
 }
 
-a, .btn-link {
-    color: #0071c1;
-}
+a, .btn-link { color: #111; }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #111; /* black buttons */
+    border-color: #000;
 }
+
+.btn-outline-secondary { color: #333; border-color: #ccc; }
+.btn-outline-secondary:hover { background:#e9e9e9; color:#111; }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-.content {
-    padding-top: 1.1rem;
-}
+.content { padding-top: 1.1rem; }
 
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;

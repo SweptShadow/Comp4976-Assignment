@@ -17,11 +17,17 @@
         <div class="nav-item px-3">
             <AuthorizeView>
                 <Authorized>
-                    <NavLink class="nav-link" href="obituaries/new">Create New</NavLink>
-                    <a class="nav-link" href="javascript:void(0)" @onclick="Logout">Logout</a>
+                    <NavLink class="nav-link" href="obituaries/new">
+                        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Create New
+                    </NavLink>
+                    <a class="nav-link" href="javascript:void(0)" @onclick="Logout">
+                        <span class="bi bi-box-arrow-right-nav-menu" aria-hidden="true"></span> Logout
+                    </a>
                 </Authorized>
                 <NotAuthorized>
-                    <NavLink class="nav-link" href="login">Login</NavLink>
+                    <NavLink class="nav-link" href="login">
+                        <span class="bi bi-box-arrow-in-right-nav-menu" aria-hidden="true"></span> Login
+                    </NavLink>
                 </NotAuthorized>
             </AuthorizeView>
         </div>

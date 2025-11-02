@@ -9,6 +9,7 @@ namespace frontend.Models
         public string? Biography { get; set; }
         public string? PhotoPath { get; set; }
         public string? SubmittedByName { get; set; }
+        public string? CreatedByEmail { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }

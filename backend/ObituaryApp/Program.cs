@@ -15,11 +15,22 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazor", policy =>
     {
-        policy.WithOrigins(
-                  "http://localhost:5000",
-                  "http://localhost:5001",
-                  "https://localhost:5001",
-                  "http://localhost:5232") // Blazor dev server default
+        var origins = new List<string>
+        {
+            "http://localhost:5000",
+            "http://localhost:5001",
+            "https://localhost:5001",
+            "http://localhost:5232",
+            "https://localhost:5232"
+        };
+
+        var dynamicFrontend = builder.Configuration["FrontendUrl"];
+        if (!string.IsNullOrWhiteSpace(dynamicFrontend))
+        {
+            origins.Add(dynamicFrontend.TrimEnd('/'));
+        }
+
+        policy.WithOrigins(origins.ToArray())
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -30,8 +41,22 @@ builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson();
 
 // Configure Entity Framework (Code First Database)
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=obituary.db";
+var sqliteConn = defaultConn;
+try
+{
+    const string relativeToken = "Data Source=obituary.db";
+    if (defaultConn.Contains(relativeToken, StringComparison.OrdinalIgnoreCase))
+    {
+        var absPath = Path.Combine(builder.Environment.ContentRootPath, "obituary.db");
+        sqliteConn = $"Data Source={absPath}";
+    }
+}
+catch { }
+
+Console.WriteLine($"[Startup] Using SQLite connection: {sqliteConn}");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(sqliteConn));
 // 👆 "Use MY ApplicationDbContext with SQLite - connect to obituary.db file"
 
 // Register Identity (cookie authentication for web app)

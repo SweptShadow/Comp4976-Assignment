@@ -1,0 +1,21 @@
+/* Placeholder tile for missing photo */
+.placeholder-tile {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #f0f2f4;
+}
+
+/* Two-column definition list feel */
+.detail-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 1.25rem;
+}
+.detail-grid .label {
+    font-size: .75rem;
+    letter-spacing: .08em;
+    color: #6c757d;
+    text-transform: uppercase;
+}
+.detail-grid .value { color: #111; }
+

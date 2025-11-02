@@ -2,19 +2,19 @@
     position: relative;
     display: flex;
     flex-direction: column;
-}
+    }
 
 main {
     flex: 1;
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-color: #111; /* Solid black sidebar for B/W theme */
 }
 
 .top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
+    background-color: #ffffff; /* clean white header row in content */
+    border-bottom: 1px solid #e5e5e5;
     justify-content: flex-end;
     height: 3.5rem;
     display: flex;
@@ -74,4 +74,31 @@ main {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
     }
+}
+
+/* Fixed footer bar */
+.app-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 48px;
+    background: #f7f7f7; /* match app background */
+    color: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    border-top: 1px solid #e5e5e5;
+    z-index: 100;
+}
+
+/* Provide space so content doesn't sit under the footer */
+.content {
+    padding-bottom: 4.5rem;
+}
+
+/* On wide screens, offset footer so it doesn't overlap the sidebar */
+@media (min-width: 641px) {
+    .app-footer { left: 250px; }
 }

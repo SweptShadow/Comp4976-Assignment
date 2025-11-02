@@ -58,7 +58,25 @@ namespace ObituaryApp.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetObituary(int id)
         {
-            var obituary = await _context.Obituaries.AsNoTracking().FirstOrDefaultAsync(o => o.Id == id);
+            var obituary = await _context.Obituaries
+                .AsNoTracking()
+                .Where(o => o.Id == id)
+                .Select(o => new
+                {
+                    o.Id,
+                    o.FullName,
+                    o.DateOfBirth,
+                    o.DateOfDeath,
+                    o.Biography,
+                    o.PhotoPath,
+                    o.SubmittedByName,
+                    o.CreatedBy,
+                    o.CreatedDate,
+                    o.ModifiedDate,
+                    CreatedByEmail = o.CreatedByUser != null ? o.CreatedByUser.Email : null
+                })
+                .FirstOrDefaultAsync();
+
             if (obituary == null) return NotFound();
 
             return Ok(obituary);

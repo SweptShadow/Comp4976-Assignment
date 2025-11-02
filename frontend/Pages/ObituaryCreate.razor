@@ -43,9 +43,9 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="photoPath" class="form-label">Photo URL</label>
-                        <InputText id="photoPath" class="form-control" @bind-Value="editingObituary.PhotoPath" />
-                        <small class="form-text text-muted">Enter a relative (e.g. /images/...) or absolute URL.</small>
+                        <label class="form-label">Photo</label>
+                        <InputFile OnChange="OnFileSelected" accept="image/*" />
+                        <small class="form-text text-muted d-block">Choose an image to upload. Max ~20MB.</small>
                         @if (!string.IsNullOrWhiteSpace(editingObituary.PhotoPath))
                         {
                             <div class="mt-2">
@@ -61,7 +61,7 @@
 
                     <div class="mb-3">
                         <button type="submit" class="btn btn-primary" disabled="@isSubmitting">@(isSubmitting ? "Saving..." : "Save")</button>
-                        <button type="button" class="btn btn-secondary" @onclick="GoBack" disabled="@isSubmitting">Cancel</button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="GoBack" disabled="@isSubmitting">Cancel</button>
                     </div>
                 </EditForm>
             </div>
@@ -80,6 +80,37 @@
     };
     private string errorMessage = string.Empty;
     private bool isSubmitting;
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file is null) return;
+            using var content = new MultipartFormDataContent();
+            var stream = file.OpenReadStream(20 * 1024 * 1024); // 20MB
+            var sc = new StreamContent(stream);
+            sc.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+            content.Add(sc, "file", file.Name);
+            var resp = await Http.PostAsync("api/Upload/photo", content);
+            if (resp.IsSuccessStatusCode)
+            {
+                var result = await resp.Content.ReadFromJsonAsync<frontend.Models.UploadResult>();
+                if (result != null && !string.IsNullOrWhiteSpace(result.Url))
+                {
+                    editingObituary.PhotoPath = result.Url;
+                }
+            }
+            else
+            {
+                errorMessage = $"Upload failed: {resp.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
 
     private async Task SaveAsync()
     {

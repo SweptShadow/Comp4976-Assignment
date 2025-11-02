@@ -20,7 +20,8 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredServ
 builder.Services.AddScoped<AuthMessageHandler>();
 
 // HttpClient for API with auth handler (uses factory so inner handler is assigned)
-var baseUrl = builder.Configuration["BackendUrl"] ?? "http://localhost:5151";
+// Prefer HTTPS by default to avoid redirect + CORS issues
+var baseUrl = builder.Configuration["BackendUrl"] ?? "https://localhost:7269";
 builder.Services
     .AddHttpClient("ApiClient", client => client.BaseAddress = new Uri(baseUrl))
     .AddHttpMessageHandler<AuthMessageHandler>();

@@ -1,7 +1,9 @@
 /* Keep images tidy and consistent */
 .card .card-img-top {
-    height: 200px;
-    object-fit: cover;
+    height: 260px;            /* taller viewport so portrait images fit */
+    width: 100%;
+    object-fit: contain;      /* do not crop; letterbox instead */
+    background: #f0f2f4;      /* subtle background behind letterboxed areas */
 }
 
 /* Subtle spacing on form preview image */
@@ -9,3 +11,50 @@ img.img-thumbnail {
     background-color: #fff;
 }
 
+/* Card styling for B/W look */
+.card { background: #ffffff; border-color: #e5e5e5; box-shadow: 0 6px 18px rgba(0,0,0,0.08); transition: box-shadow .2s ease, transform .2s ease; }
+.card:hover { box-shadow: 0 10px 24px rgba(0,0,0,0.12); transform: translateY(-1px); }
+
+/* Placeholder for missing images on list cards */
+.placeholder-tile {
+    height: 260px; /* match .card-img-top height so layouts align */
+    background: #f0f2f4;
+}
+
+/* Make cards equal height within a row */
+.row > [class*="col-"] { display: flex; }
+.row > [class*="col-"] > .card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+.card .card-body {
+    display: flex;
+    flex-direction: column;
+}
+.card .card-body .actions { margin-top: auto; }
+.page-header-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 95;
+    background: #f7f7f7; /* match page bg */
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    border-bottom: 1px solid #e5e5e5;
+}
+.card .card-title {
+    color: #111;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    letter-spacing: .2px;
+}
+.card .card-text { color: #333; }
+
+/* Flourished script for the biography excerpt */
+.card .card-bio {
+    font-family: 'Great Vibes', cursive;
+    font-size: 1.15rem;
+    line-height: 1.35;
+    color: #333;
+}
