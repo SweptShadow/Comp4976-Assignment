@@ -26,7 +26,7 @@ namespace ObituaryApp.Controllers
         [HttpPost("photo")]
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [RequestSizeLimit(20_000_000)] // 20 MB
-        public async Task<IActionResult> UploadPhoto([FromForm] IFormFile file)
+        public async Task<IActionResult> UploadPhoto(IFormFile file)
         {
             if (file == null || file.Length == 0) return BadRequest(new { message = "No file provided" });
 

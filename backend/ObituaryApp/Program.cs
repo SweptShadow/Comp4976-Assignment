@@ -130,6 +130,9 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+
+    // Add support for file upload parameters
+    c.OperationFilter<ObituaryApp.Extensions.SwaggerFileUploadFilter>();
 });
 
 // Add custom services (will be created in Step 5)
