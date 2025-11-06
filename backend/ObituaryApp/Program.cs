@@ -40,24 +40,44 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson();
 
-// Configure Entity Framework (Code First Database)
-var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=obituary.db";
-var sqliteConn = defaultConn;
-try
-{
-    const string relativeToken = "Data Source=obituary.db";
-    if (defaultConn.Contains(relativeToken, StringComparison.OrdinalIgnoreCase))
+// Configure Entity Framework with SQL Server (migrated from SQLite)
+// NEW SQL Server configuration via Aspire with retry logic
+// Get connection string from Aspire service defaults (injected as "sqldata")
+// Fallback to "DefaultConnection" for local testing without Aspire
+var sqlServerConnString = builder.Configuration.GetConnectionString("sqldata")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'sqldata' or 'DefaultConnection' not found.");
+
+Console.WriteLine($"[Startup] Using SQL Server connection: {sqlServerConnString}");
+Console.WriteLine($"[Startup] Environment: {builder.Environment.EnvironmentName}");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(sqlServerConnString, sqlOptions =>
     {
-        var absPath = Path.Combine(builder.Environment.ContentRootPath, "obituary.db");
-        sqliteConn = $"Data Source={absPath}";
-    }
-}
-catch { }
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null);
+    }));
+// 👆 "Use MY ApplicationDbContext with SQL Server - connect via Aspire with retry logic"
 
-Console.WriteLine($"[Startup] Using SQLite connection: {sqliteConn}");
-
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(sqliteConn));
-// 👆 "Use MY ApplicationDbContext with SQLite - connect to obituary.db file"
+// OLD SQLite Configuration (commented out for reference)
+// var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=obituary.db";
+// var sqliteConn = defaultConn;
+// try
+// {
+//     const string relativeToken = "Data Source=obituary.db";
+//     if (defaultConn.Contains(relativeToken, StringComparison.OrdinalIgnoreCase))
+//     {
+//         var absPath = Path.Combine(builder.Environment.ContentRootPath, "obituary.db");
+//         sqliteConn = $"Data Source={absPath}";
+//     }
+// }
+// catch { }
+// 
+// Console.WriteLine($"[Startup] Using SQLite connection: {sqliteConn}");
+// 
+// builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(sqliteConn));
 
 // Register Identity (cookie authentication for web app)
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -174,22 +194,66 @@ app.MapRazorPages();
 // Initialize database and seed data
 using (var scope = app.Services.CreateScope())
 {
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        // For SQLite, use EnsureCreated which is more reliable than Migrate
-        context.Database.EnsureCreated();
+        logger.LogInformation("[Startup] Attempting to migrate database...");
+        context.Database.Migrate();
+        logger.LogInformation("[Startup] Database migration completed successfully.");
 
         // Seed data
+        logger.LogInformation("[Startup] Seeding database...");
         await SeedData.Initialize(scope.ServiceProvider);
+        logger.LogInformation("[Startup] Database seeding completed successfully.");
     }
     catch (Exception ex)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while initializing the database.");
-        // Continue startup even if seeding fails
+        var logger2 = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger2.LogError(ex, "[Startup] Error during database initialization. Application will continue but may not function properly.");
     }
 }
+
+// OLD SQLite initialization (commented out for reference)
+// using (var scope = app.Services.CreateScope())
+// {
+//     try
+//     {
+//         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//
+//         // For SQLite, use EnsureCreated which is more reliable than Migrate
+//         context.Database.EnsureCreated();
+//
+//         // Seed data
+//         await SeedData.Initialize(scope.ServiceProvider);
+//     }
+//     catch (Exception ex)
+//     {
+//         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+//         logger.LogError(ex, "An error occurred while initializing the database.");
+//         // Continue startup even if seeding fails
+//     }
+// }
+
+// OLD SQLite initialization (commented out for reference)
+// using (var scope = app.Services.CreateScope())
+// {
+//     try
+//     {
+//         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//
+//         // For SQLite, use EnsureCreated which is more reliable than Migrate
+//         context.Database.EnsureCreated();
+//
+//         // Seed data
+//         await SeedData.Initialize(scope.ServiceProvider);
+//     }
+//     catch (Exception ex)
+//     {
+//         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+//         logger.LogError(ex, "An error occurred while initializing the database.");
+//         // Continue startup even if seeding fails
+//     }
+// }
 
 app.Run();

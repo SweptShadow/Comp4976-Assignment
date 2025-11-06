@@ -15,7 +15,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.9" />
+    <!-- OLD SQLite provider (commented out - migrating to SQL Server) -->
+    <!-- <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.9" /> -->
+    <!-- NEW SQL Server provider for migration -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -27,6 +29,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.22.0" />
+    <!-- Aspire SQL Server client library for connection integration -->
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="8.2.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Comp4976-Assignment.ServiceDefaults\Comp4976-Assignment.ServiceDefaults.csproj" />
