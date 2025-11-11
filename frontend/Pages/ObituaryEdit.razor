@@ -154,10 +154,26 @@
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<dynamic>();
-                if (result?.enhancedDescription != null)
+                var responseText = await response.Content.ReadAsStringAsync();
+                if (!string.IsNullOrWhiteSpace(responseText))
                 {
-                    editingObituary.Biography = result.enhancedDescription.ToString();
+                    // Parse JSON response: { "enhancedDescription": "..." }
+                    try
+                    {
+                        var jsonDoc = System.Text.Json.JsonDocument.Parse(responseText);
+                        if (jsonDoc.RootElement.TryGetProperty("enhancedDescription", out var descElement))
+                        {
+                            editingObituary.Biography = descElement.GetString() ?? string.Empty;
+                        }
+                        else
+                        {
+                            aiErrorMessage = "AI service returned invalid response format.";
+                        }
+                    }
+                    catch (System.Text.Json.JsonException)
+                    {
+                        aiErrorMessage = "AI service returned invalid JSON response.";
+                    }
                 }
                 else
                 {
