@@ -7,6 +7,10 @@ using System.Text;
 using ObituaryApp.Data;
 using ObituaryApp.Models;
 using ObituaryApp.Services; // ← Uncomment when JwtService is created
+using DotNetEnv;
+
+// Load .env file if it exists
+Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,6 +101,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddScoped<IJwtService, JwtService>();
 // Blob storage service (Azure Blob). Provide configuration in appsettings.json under "AzureBlob:ConnectionString" and "AzureBlob:ContainerName".
 builder.Services.AddSingleton<ObituaryApp.Services.IBlobService, ObituaryApp.Services.BlobService>();
+
+// Add AI service for GitHub Models
+builder.Services.AddHttpClient<IAiService, GitHubModelsAiService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 // Register JWT authentication (for API endpoints)
 // DO NOT override the default scheme globally, to avoid conflict with Identity

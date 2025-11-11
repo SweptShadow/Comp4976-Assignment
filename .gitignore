@@ -1,6 +1,10 @@
 #.gitignore for ASP.NET Core solution with MVC + EF Core + Identity + Swagger.
 #This is to keep source tracked; ignores build artifacts, IDE-specific files, and local secrets.
 
+# Environment files (secrets)
+.env
+.env.local
+.env.production
 
 # Build outputs
 # Ignore build outputs in any subfolder 

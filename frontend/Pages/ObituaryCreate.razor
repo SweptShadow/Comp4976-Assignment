@@ -26,20 +26,46 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="dateOfBirth" class="form-label">Date of Birth</label>
-                            <InputDate id="dateOfBirth" class="form-control" @bind-Value="editingObituary.DateOfBirth" />
+                            <InputDate id="dateOfBirth" class="form-control"
+                                @bind-Value="editingObituary.DateOfBirth" />
                             <ValidationMessage For="() => editingObituary.DateOfBirth" />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="dateOfDeath" class="form-label">Date of Death</label>
-                            <InputDate id="dateOfDeath" class="form-control" @bind-Value="editingObituary.DateOfDeath" />
+                            <InputDate id="dateOfDeath" class="form-control"
+                                @bind-Value="editingObituary.DateOfDeath" />
                             <ValidationMessage For="() => editingObituary.DateOfDeath" />
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="biography" class="form-label">Biography</label>
-                        <InputTextArea id="biography" class="form-control" rows="5" @bind-Value="editingObituary.Biography" />
+                        <label for="biography" class="form-label">Biography <span class="text-danger">*</span></label>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted">Provide a detailed description of the person's life and
+                                legacy.</small>
+                            <button type="button" class="btn btn-outline-primary btn-sm" @onclick="EnhanceWithAi"
+                                disabled="@(isSubmitting || isEnhancing || string.IsNullOrWhiteSpace(editingObituary.FullName))">
+                                @if (isEnhancing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                    <span>Enhancing...</span>
+                                }
+                                else
+                                {
+                                    <span>@GetAiButtonText()</span>
+                                }
+                            </button>
+                        </div>
+                        <InputTextArea id="biography" class="form-control" rows="6"
+                            @bind-Value="editingObituary.Biography"
+                            placeholder="Enter biography or click 'Generate Description with AI' to have AI help you create one..." />
                         <ValidationMessage For="() => editingObituary.Biography" />
+                        @if (!string.IsNullOrEmpty(aiErrorMessage))
+                        {
+                            <div class="text-danger mt-2">
+                                <small>@aiErrorMessage</small>
+                            </div>
+                        }
                     </div>
 
                     <div class="mb-3">
@@ -49,7 +75,8 @@
                         @if (!string.IsNullOrWhiteSpace(editingObituary.PhotoPath))
                         {
                             <div class="mt-2">
-                                <img src="@editingObituary.PhotoPath" alt="Photo preview" class="img-thumbnail" style="max-width: 240px;" />
+                                <img src="@editingObituary.PhotoPath" alt="Photo preview" class="img-thumbnail"
+                                    style="max-width: 240px;" />
                             </div>
                         }
                     </div>
@@ -60,8 +87,10 @@
                     }
 
                     <div class="mb-3">
-                        <button type="submit" class="btn btn-primary" disabled="@isSubmitting">@(isSubmitting ? "Saving..." : "Save")</button>
-                        <button type="button" class="btn btn-outline-secondary" @onclick="GoBack" disabled="@isSubmitting">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSubmitting">@(isSubmitting ?
+                                                        "Saving..." : "Save")</button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="GoBack"
+                            disabled="@isSubmitting">Cancel</button>
                     </div>
                 </EditForm>
             </div>
@@ -76,10 +105,84 @@
     private Obituary editingObituary = new()
     {
         DateOfBirth = DateTime.Today.AddYears(-80),
-        DateOfDeath = DateTime.Today
+        DateOfDeath = DateTime.Today,
+        Biography = string.Empty // Start with empty biography (required field)
     };
     private string errorMessage = string.Empty;
+    private string aiErrorMessage = string.Empty;
     private bool isSubmitting;
+    private bool isEnhancing;
+
+    private string GetAiButtonText()
+    {
+        return string.IsNullOrWhiteSpace(editingObituary.Biography)
+        ? "Generate Description with AI"
+        : "Enhance Description with AI";
+    }
+
+    private async Task EnhanceWithAi()
+    {
+        if (string.IsNullOrWhiteSpace(editingObituary.FullName))
+        {
+            aiErrorMessage = "Please enter the full name first";
+            return;
+        }
+
+        aiErrorMessage = string.Empty;
+        isEnhancing = true;
+
+        try
+        {
+            var request = new
+            {
+                FullName = editingObituary.FullName,
+                CurrentDescription = string.IsNullOrWhiteSpace(editingObituary.Biography) ? null : editingObituary.Biography
+            };
+
+            var response = await Http.PostAsJsonAsync("api/ObituariesApi/enhance-description", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<dynamic>();
+                if (result?.enhancedDescription != null)
+                {
+                    editingObituary.Biography = result.enhancedDescription.ToString();
+                }
+                else
+                {
+                    aiErrorMessage = "AI service returned empty response. Please try again.";
+                }
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.RequestTimeout)
+            {
+                aiErrorMessage = "Request timed out. Please try again.";
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
+            {
+                aiErrorMessage = "AI service is temporarily unavailable. Please try again later.";
+            }
+            else
+            {
+                aiErrorMessage = "An error occurred while enhancing the description. Please try again.";
+            }
+        }
+        catch (HttpRequestException)
+        {
+            aiErrorMessage = "Network error. Please check your connection and try again.";
+        }
+        catch (TaskCanceledException)
+        {
+            aiErrorMessage = "Request timed out. Please try again.";
+        }
+        catch (Exception)
+        {
+            aiErrorMessage = "An unexpected error occurred. Please try again.";
+        }
+        finally
+        {
+            isEnhancing = false;
+        }
+    }
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
@@ -129,7 +232,8 @@
             {
                 Navigation.NavigateTo("/obituaries", forceLoad: true);
             }
-            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode ==
+            System.Net.HttpStatusCode.Forbidden)
             {
                 errorMessage = "You must be signed in to perform this action.";
             }

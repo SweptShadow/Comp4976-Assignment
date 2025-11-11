@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ObituaryApp.Extensions;
 using ObituaryApp.Data;
 using ObituaryApp.Models;
+using ObituaryApp.Services;
 
 namespace ObituaryApp.Controllers
 {
@@ -18,10 +19,12 @@ namespace ObituaryApp.Controllers
     public class ObituariesApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAiService _aiService;
 
-        public ObituariesApiController(ApplicationDbContext context)
+        public ObituariesApiController(ApplicationDbContext context, IAiService aiService)
         {
             _context = context;
+            _aiService = aiService;
         }
 
         // GET: api/ObituariesApi
@@ -167,9 +170,51 @@ namespace ObituaryApp.Controllers
 
             _context.Obituaries.Remove(obituary);
             await _context.SaveChangesAsync();
-            
+
             return NoContent();
         }
 
+        // POST: api/ObituariesApi/enhance-description
+        /**
+         * Enhances or generates an obituary description using AI.
+         * JWT required.
+         */
+        [HttpPost("enhance-description")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> EnhanceDescription([FromBody] EnhanceDescriptionRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.FullName))
+            {
+                return BadRequest(new { error = "Full name is required" });
+            }
+
+            try
+            {
+                var enhancedDescription = await _aiService.EnhanceObituaryDescriptionAsync(
+                    request.FullName,
+                    request.CurrentDescription);
+
+                return Ok(new { enhancedDescription });
+            }
+            catch (TimeoutException ex)
+            {
+                return StatusCode(408, new { error = ex.Message });
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, new { error = "AI service temporarily unavailable. Please try again later." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred while enhancing the description. Please try again." });
+            }
+        }
+    }
+
+    // Request model for AI enhancement
+    public class EnhanceDescriptionRequest
+    {
+        public string FullName { get; set; } = string.Empty;
+        public string? CurrentDescription { get; set; }
     }
 }
